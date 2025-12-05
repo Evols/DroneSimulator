@@ -1,0 +1,33 @@
+﻿#include "DroneSimulator/Simulation/LinearDrag.h"
+#include "DroneSimulator/Simulation/SubstepBody.h"
+#include "DroneSimulator/Simulation/SimulationWorld.h"
+#include "DroneSimulator/Simulation/Structural.h"
+
+
+void simulation::calculate_linear_drag(FSubstepBody* substep_body, const FDroneFrame& frame, const USimulationWorld* simulation_world)
+{
+	const auto& transform = substep_body->transform_world;
+	// We want it in m/s
+	const auto frame_velocity = substep_body->linear_velocity_world;
+
+	const auto [air_density, wind_velocity] = simulation_world->get_wind_and_air_density();
+
+	const auto frame_cda = frame.area * frame.drag_coefficient;
+
+	// Apply linear drag
+
+	// Air velocity relative to the drone
+	const auto air_velocity = wind_velocity - frame_velocity;
+	// The drone can be rotated. So, we want the air velocity relative to the drone's frame of reference
+	const auto air_velocity_local = transform.InverseTransformVectorNoScale(air_velocity);
+
+	// Quadratic per-axis: F = -0.5*rho * CdA_axis * v*|v|
+	const auto drag_force_local = FVector(
+		0.5 * air_density * frame_cda.X * air_velocity_local.X * FMath::Abs(air_velocity_local.X),
+		0.5 * air_density * frame_cda.Y * air_velocity_local.Y * FMath::Abs(air_velocity_local.Y),
+		0.5 * air_density * frame_cda.Z * air_velocity_local.Z * FMath::Abs(air_velocity_local.Z)
+	).GetClampedToMaxSize(500.0);
+
+	const auto drag_force = transform.TransformVectorNoScale(drag_force_local);
+	substep_body->add_force(drag_force);
+}
