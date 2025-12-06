@@ -1,6 +1,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
+#if PLATFORM_WINDOWS
+
 #include "HIDDevice.h"
 
 class FHIDInputManager
@@ -21,3 +24,5 @@ private:
     bool initialized = false;
     double last_enumeration_time = 0.0;
 };
+
+#endif
