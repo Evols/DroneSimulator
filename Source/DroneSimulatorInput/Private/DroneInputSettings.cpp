@@ -8,6 +8,14 @@
 #include "RawInput/Public/Windows/RawInputWindows.h"
 #endif
 
+#if PLATFORM_MAC
+#include <CoreFoundation/CoreFoundation.h>
+#include <IOKit/IOKitLib.h>
+#include <IOKit/hid/IOHIDLib.h>
+#include <IOKit/hid/IOHIDManager.h>
+#include <vector>
+#endif
+
 #if PLATFORM_WINDOWS
 #include "Framework/Application/SlateApplication.h"
 #include "Windows/AllowWindowsPlatformTypes.h"
@@ -137,6 +145,138 @@ FString UDroneInputSettings::get_device_pid(const FRawInputDeviceInfo &device) {
 
 TArray<FRawInputDeviceInfo> UDroneInputSettings::query_devices() {
   TArray<FRawInputDeviceInfo> devices;
+
+#if PLATFORM_MAC
+  // Create an HID Manager
+  IOHIDManagerRef hid_manager =
+      IOHIDManagerCreate(kCFAllocatorDefault, kIOHIDOptionsTypeNone);
+  if (!hid_manager) {
+    return devices;
+  }
+
+  // Create a matching dictionary for Gamepads and Joysticks
+  CFMutableArrayRef matching_array =
+      CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
+
+  // Helper to add usage page/usage pair
+  auto add_matching_usage = [&](uint32_t page, uint32_t usage) {
+    CFMutableDictionaryRef dict = CFDictionaryCreateMutable(
+        kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks,
+        &kCFTypeDictionaryValueCallBacks);
+    if (dict) {
+      int page_val = page;
+      int usage_val = usage;
+      CFNumberRef page_num =
+          CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &page_val);
+      CFNumberRef usage_num =
+          CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &usage_val);
+
+      CFDictionarySetValue(dict, CFSTR(kIOHIDDeviceUsagePageKey), page_num);
+      CFDictionarySetValue(dict, CFSTR(kIOHIDDeviceUsageKey), usage_num);
+
+      CFRelease(page_num);
+      CFRelease(usage_num);
+
+      CFArrayAppendValue(matching_array, dict);
+      CFRelease(dict);
+    }
+  };
+
+  // Add Generic Desktop - Joystick (0x01, 0x04)
+  add_matching_usage(kHIDPage_GenericDesktop, kHIDUsage_GD_Joystick);
+  // Add Generic Desktop - Gamepad (0x01, 0x05)
+  add_matching_usage(kHIDPage_GenericDesktop, kHIDUsage_GD_GamePad);
+  // Add Generic Desktop - MultiAxisController (0x01, 0x08)
+  add_matching_usage(kHIDPage_GenericDesktop, kHIDUsage_GD_MultiAxisController);
+
+  IOHIDManagerSetDeviceMatchingMultiple(hid_manager, matching_array);
+  CFRelease(matching_array);
+
+  // Open the manager to enumerate
+  IOHIDManagerOpen(hid_manager, kIOHIDOptionsTypeNone);
+
+  // Get current devices
+  CFSetRef device_set = IOHIDManagerCopyDevices(hid_manager);
+  if (!device_set) {
+    CFRelease(hid_manager);
+    return devices;
+  }
+
+  CFIndex device_count = CFSetGetCount(device_set);
+  if (device_count > 0) {
+    std::vector<IOHIDDeviceRef> refs(device_count);
+    CFSetGetValues(device_set, (const void **)refs.data());
+
+    for (const auto &dev_ref : refs) {
+      FRawInputDeviceInfo device_info;
+
+      // Product Name
+      CFStringRef product_name_ref =
+          (CFStringRef)IOHIDDeviceGetProperty(dev_ref, CFSTR(kIOHIDProductKey));
+      if (product_name_ref) {
+        char buffer[256];
+        if (CFStringGetCString(product_name_ref, buffer, sizeof(buffer),
+                               kCFStringEncodingUTF8)) {
+          device_info.device_name = FString(UTF8_TO_TCHAR(buffer));
+        }
+      }
+      if (device_info.device_name.IsEmpty()) {
+        device_info.device_name = TEXT("Unknown Device");
+      }
+
+      // Vendor ID
+      CFNumberRef vid_ref = (CFNumberRef)IOHIDDeviceGetProperty(
+          dev_ref, CFSTR(kIOHIDVendorIDKey));
+      if (vid_ref) {
+        int32 vid = 0;
+        CFNumberGetValue(vid_ref, kCFNumberSInt32Type, &vid);
+        device_info.vendor_id = vid;
+      }
+
+      // Product ID
+      CFNumberRef pid_ref = (CFNumberRef)IOHIDDeviceGetProperty(
+          dev_ref, CFSTR(kIOHIDProductIDKey));
+      if (pid_ref) {
+        int32 pid = 0;
+        CFNumberGetValue(pid_ref, kCFNumberSInt32Type, &pid);
+        device_info.product_id = pid;
+      }
+
+      // Usage Page
+      CFNumberRef usage_page_ref = (CFNumberRef)IOHIDDeviceGetProperty(
+          dev_ref, CFSTR(kIOHIDPrimaryUsagePageKey));
+      if (usage_page_ref) {
+        int32 up = 0;
+        CFNumberGetValue(usage_page_ref, kCFNumberSInt32Type, &up);
+        device_info.usage_page = up;
+      }
+
+      // Usage
+      CFNumberRef usage_ref = (CFNumberRef)IOHIDDeviceGetProperty(
+          dev_ref, CFSTR(kIOHIDPrimaryUsageKey));
+      if (usage_ref) {
+        int32 u = 0;
+        CFNumberGetValue(usage_ref, kCFNumberSInt32Type, &u);
+        device_info.usage = u;
+      }
+
+      // Set Type and Known Info
+      device_info.device_type = ERawInputDeviceType::HID;
+      device_info.vendor_known =
+          UKnownHidLibrary::parse_vendor_id(device_info.vendor_id);
+      device_info.product_known = UKnownHidLibrary::parse_product_id(
+          device_info.vendor_known, device_info.product_id);
+      device_info.display_name = FString::Printf(
+          TEXT("HID (VID:0x%04X PID:0x%04X) - %s"), device_info.vendor_id,
+          device_info.product_id, *device_info.device_name);
+
+      devices.Add(device_info);
+    }
+  }
+
+  CFRelease(device_set);
+  CFRelease(hid_manager); // This closes the manager as well
+#endif
 
 #if PLATFORM_WINDOWS
   UINT device_count = 0;

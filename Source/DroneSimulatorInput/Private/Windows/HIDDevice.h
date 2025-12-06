@@ -2,8 +2,6 @@
 
 #include "CoreMinimal.h"
 
-#if PLATFORM_WINDOWS
-
 #include "Windows/WindowsHWrapper.h"
 #include <hidsdi.h>
 #include <setupapi.h>
@@ -43,5 +41,3 @@ private:
   void parse_capabilities();
   void issue_read();
 };
-
-#endif

@@ -1,15 +1,15 @@
 #include "DroneSimulatorInput/Private/Windows/HIDInputManager.h"
 
-#if PLATFORM_WINDOWS
-
 #include "DroneSimulatorInput/Public/DroneInputSubsystem.h"
 #include "DroneSimulatorInput/Public/DroneInputTypes.h"
 #include "DroneSimulatorInput/Public/DroneSimulatorInput.h"
 
+#if PLATFORM_WINDOWS
 #include <hidsdi.h>
 #include <setupapi.h>
 #pragma comment(lib, "setupapi.lib")
 #pragma comment(lib, "hid.lib")
+#endif
 
 FHIDInputManager &FHIDInputManager::get() {
   static FHIDInputManager instance;
@@ -96,6 +96,7 @@ void FHIDInputManager::poll_devices(UDroneInputSubsystem *input_subsystem) {
 
 void FHIDInputManager::enumerate_devices(
     UDroneInputSubsystem *input_subsystem) {
+#if PLATFORM_WINDOWS
   GUID hid_guid;
   HidD_GetHidGuid(&hid_guid);
 
@@ -170,6 +171,5 @@ void FHIDInputManager::enumerate_devices(
       devices.RemoveAt(i);
     }
   }
-}
-
 #endif
+}
