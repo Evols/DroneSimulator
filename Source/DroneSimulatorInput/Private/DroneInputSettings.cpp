@@ -3,10 +3,6 @@
 #include "DroneSimulatorInput.h"
 #include "DroneSimulatorInput/Public/KnownHid.h"
 
-#if PLATFORM_WINDOWS
-#include "RawInput/Public/RawInput.h"
-#include "RawInput/Public/Windows/RawInputWindows.h"
-#endif
 
 #if PLATFORM_MAC
 #include <CoreFoundation/CoreFoundation.h>
@@ -17,7 +13,6 @@
 #endif
 
 #if PLATFORM_WINDOWS
-#include "Framework/Application/SlateApplication.h"
 #include "Windows/AllowWindowsPlatformTypes.h"
 #include "Windows/HideWindowsPlatformTypes.h"
 #include "Windows/WindowsApplication.h"
@@ -40,8 +35,7 @@ TArray<FRawInputDeviceInfo> UDroneInputSettings::get_hid_devices() {
   return hid_devices;
 }
 
-TArray<FRawInputDeviceInfo>
-UDroneInputSettings::find_devices_by_vendor_id(int32 vendor_id) {
+TArray<FRawInputDeviceInfo> UDroneInputSettings::find_devices_by_vendor_id(int32 vendor_id) {
   TArray<FRawInputDeviceInfo> devices = get_hid_devices();
   TArray<FRawInputDeviceInfo> found_devices;
 
@@ -52,32 +46,6 @@ UDroneInputSettings::find_devices_by_vendor_id(int32 vendor_id) {
   }
 
   return found_devices;
-}
-
-bool UDroneInputSettings::register_device(int32 usage_page, int32 usage) {
-#if PLATFORM_WINDOWS
-  if (!FRawInputPlugin::IsAvailable()) {
-    return false;
-  }
-
-  FRawInputWindows *raw_input = static_cast<FRawInputWindows *>(
-      static_cast<FRawInputPlugin *>(&FRawInputPlugin::Get())
-          ->GetRawInputDevice()
-          .Get());
-
-  if (raw_input == nullptr) {
-    return false;
-  }
-
-  int32 flags = RIDEV_INPUTSINK;
-  int32 handle = raw_input->RegisterInputDevice(
-      RIM_TYPEHID, flags, static_cast<uint16>(usage),
-      static_cast<int16>(usage_page), nullptr);
-
-  return handle != INDEX_NONE;
-#else
-  return false;
-#endif
 }
 
 void UDroneInputSettings::register_all_hid_devices() {
@@ -92,13 +60,6 @@ void UDroneInputSettings::register_all_hid_devices() {
     }
 
     registered.Add(usage_pair);
-
-    if (register_device(device.usage_page, device.usage)) {
-      UE_LOG(
-          LogDroneSimulatorInput, Log,
-          TEXT("Registered HID: VID:0x%04X PID:0x%04X (UsagePage:%d Usage:%d)"),
-          device.vendor_id, device.product_id, device.usage_page, device.usage);
-    }
   }
 }
 
@@ -119,17 +80,7 @@ void UDroneInputSettings::log_hid_devices() {
 
 void UDroneInputSettings::initialize() {
 #if PLATFORM_WINDOWS
-  if (!FRawInputPlugin::IsAvailable()) {
-    return;
-  }
-
-  FRawInputWindows *raw_input_windows = static_cast<FRawInputWindows *>(
-      FRawInputPlugin::Get().GetRawInputDevice().Get());
-
-  if (raw_input_windows != nullptr) {
-    raw_input_windows->QueryConnectedDevices();
-  }
-
+  // RawInput plugin dependency removed.
   log_hid_devices();
   register_all_hid_devices();
 #endif

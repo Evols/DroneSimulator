@@ -22,7 +22,7 @@ public class DroneSimulatorInput : ModuleRules
 
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
-			PrivateDependencyModuleNames.Add("RawInput");
+			// PrivateDependencyModuleNames.Add("RawInput");
 			PublicSystemLibraries.AddRange(new string[] { "hid.lib", "setupapi.lib" });
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Mac)

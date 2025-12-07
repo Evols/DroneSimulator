@@ -70,9 +70,6 @@ public:
 	TArray<FRawInputDeviceInfo> find_devices_by_vendor_id(int32 vendor_id);
 
 	UFUNCTION(BlueprintCallable, Category="Drone Raw Input")
-	bool register_device(int32 usage_page, int32 usage);
-
-	UFUNCTION(BlueprintCallable, Category="Drone Raw Input")
 	void register_all_hid_devices();
 
 	UFUNCTION(BlueprintCallable, Category="Drone Raw Input")
