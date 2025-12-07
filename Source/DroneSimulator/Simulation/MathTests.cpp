@@ -130,7 +130,7 @@ void FMathSpec::Define()
 			const auto thrust_1 = result_1.thrust;
 
 			constexpr auto angular_speed_2 = math::rpm_to_rad_per_sec(2000.0);
-			const auto [result_2,  __] = simulation_bemt::compute_thrust_and_torque(angular_speed_2, FVector::UnitZ(), wind_velocity, prop_velocity, air_density, &propeller);
+			const auto [result_2, __] = simulation_bemt::compute_thrust_and_torque(angular_speed_2, FVector::UnitZ(), wind_velocity, prop_velocity, air_density, &propeller);
 			const auto thrust_2 = result_2.thrust;
 
 			this->TestGreaterThan("Thrust", thrust_2, thrust_1);
