@@ -1,4 +1,5 @@
 #include "DroneInputProfileManager.h"
+#include "DroneSimulatorInput.h"
 
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -11,6 +12,29 @@ void FDroneInputProfileManager::load_profiles()
 	saved_profiles.Empty();
 
 	const FString path = get_profile_file_path();
+	if (!FPaths::FileExists(path))
+	{
+		// Try to copy default file if it exists in the project directory
+		const FString default_path = FPaths::Combine(FPaths::ProjectDir(), TEXT("DroneInputMappings.json"));
+		if (FPaths::FileExists(default_path))
+		{
+			const FString directory = FPaths::GetPath(path);
+			IPlatformFile& platform_file = FPlatformFileManager::Get().GetPlatformFile();
+			
+			if (platform_file.CreateDirectoryTree(*directory))
+			{
+				if (platform_file.CopyFile(*path, *default_path))
+				{
+					UE_LOG(LogDroneSimulatorInput, Log, TEXT("Copied default input profile from %s to %s"), *default_path, *path);
+				}
+				else
+				{
+					UE_LOG(LogDroneSimulatorInput, Warning, TEXT("Failed to copy default input profile from %s"), *default_path);
+				}
+			}
+		}
+	}
+
 	if (!FPaths::FileExists(path))
 	{
 		return;
