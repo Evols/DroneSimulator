@@ -6,6 +6,7 @@
 #include "DroneSimulatorInput/Public/DroneInputTypes.h"
 #include "DroneSimulatorInput/Public/DroneSimulatorInput.h"
 
+#include <IOKit/hid/IOHIDKeys.h>
 #include <IOKit/hid/IOHIDLib.h>
 
 FHIDInputManager &FHIDInputManager::get() {
@@ -21,7 +22,41 @@ void FHIDInputManager::initialize() {
       IOHIDManagerCreate(kCFAllocatorDefault, kIOHIDOptionsTypeNone);
   if (Manager) {
     hid_manager_ref = Manager;
-    IOHIDManagerSetDeviceMatching(Manager, nullptr); // Match all
+
+    // Create matching criteria for Gamepads, Joysticks, and Multi-Axis
+    // preventing the manager from trying to open Keyboards/Mice which requires
+    // special permissions.
+    const int32_t Usages[] = {kHIDUsage_GD_Joystick, kHIDUsage_GD_Gamepad,
+                              kHIDUsage_GD_MultiAxisController};
+
+    CFMutableArrayRef MatchingArray =
+        CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
+
+    for (int32_t Usage : Usages) {
+      CFMutableDictionaryRef Dict = CFDictionaryCreateMutable(
+          kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks,
+          &kCFTypeDictionaryValueCallBacks);
+      if (Dict) {
+        int32_t Page = kHIDPage_GenericDesktop;
+        CFNumberRef PageNum =
+            CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &Page);
+        CFNumberRef UsageNum =
+            CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &Usage);
+
+        CFDictionarySetValue(Dict, CFSTR(kIOHIDDeviceUsagePageKey), PageNum);
+        CFDictionarySetValue(Dict, CFSTR(kIOHIDDeviceUsageKey), UsageNum);
+
+        CFRelease(PageNum);
+        CFRelease(UsageNum);
+
+        CFArrayAppendValue(MatchingArray, Dict);
+        CFRelease(Dict);
+      }
+    }
+
+    IOHIDManagerSetDeviceMatchingMultiple(Manager, MatchingArray);
+    CFRelease(MatchingArray);
+
     IOHIDManagerRegisterDeviceMatchingCallback(
         Manager, &FHIDInputManager::on_device_matching_callback, this);
     IOHIDManagerRegisterDeviceRemovalCallback(
