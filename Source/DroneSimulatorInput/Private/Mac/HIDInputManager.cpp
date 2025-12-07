@@ -26,7 +26,7 @@ void FHIDInputManager::initialize() {
     // Create matching criteria for Gamepads, Joysticks, and Multi-Axis
     // preventing the manager from trying to open Keyboards/Mice which requires
     // special permissions.
-    const int32_t Usages[] = {kHIDUsage_GD_Joystick, kHIDUsage_GD_Gamepad,
+    const int32_t Usages[] = {kHIDUsage_GD_Joystick, kHIDUsage_GD_GamePad,
                               kHIDUsage_GD_MultiAxisController};
 
     CFMutableArrayRef MatchingArray =
