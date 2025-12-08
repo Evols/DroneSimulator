@@ -51,7 +51,7 @@ Typical use cases include:
   - `Drone Simulator`
   - `Drone Simulator Input`
   - `Drone Simulator Editor`
-  - plus the built-in `RawInput` and `Enhanced Input` plugins.
+  - plus the built-in `Enhanced Input` plugin.
 - Restart the editor if prompted.
 
 2. **Spawn a drone**
