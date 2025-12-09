@@ -7,8 +7,8 @@ struct FDroneSetpoint;
 FPropellerSetThrottle UBasicDroneController::tick_controller(float delta_time, const FDroneSetpoint& setpoint, const FVector& current_angular_velocity)
 {
 	const auto global_throttle = FMath::Clamp(0.1 + 0.8 * setpoint.throttle, 0.0, 1.0);
-	const auto roll_throttle = setpoint.angular_velocity_radians.X * this->roll_throttle_rate;
-	const auto pitch_throttle = setpoint.angular_velocity_radians.Y * this->pitch_throttle_rate;
+	const auto roll_throttle = setpoint.angular_velocity_radians.X * -this->roll_throttle_rate;
+	const auto pitch_throttle = setpoint.angular_velocity_radians.Y * -this->pitch_throttle_rate;
 	const auto yaw_throttle = setpoint.angular_velocity_radians.Z * -this->yaw_throttle_rate;
 
 	double throttle_fl = global_throttle + pitch_throttle + roll_throttle + yaw_throttle;
