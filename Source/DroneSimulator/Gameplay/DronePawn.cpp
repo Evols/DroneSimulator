@@ -16,6 +16,11 @@ UPawnMovementComponent* ADronePawn::GetMovementComponent() const
 
 void ADronePawn::enqueue_flight_record(const TArray<FFlightRecordPawnEvent>& events)
 {
+	if (!enable_recording)
+	{
+		return;
+	}
+
 	FScopeLock Lock(&this->temp_flight_record_mutex);
 	temp_flight_record.Append(events);
 }

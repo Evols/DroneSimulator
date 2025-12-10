@@ -55,6 +55,9 @@ public:
 
 public:
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool enable_recording = true;
+	
 	FCriticalSection temp_flight_record_mutex;
 	TArray<FFlightRecordPawnEvent> temp_flight_record;
 
