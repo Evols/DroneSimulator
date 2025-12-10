@@ -31,7 +31,9 @@ public:
     UPROPERTY()
     FVector linear_velocity_world;
 
-    // In rad/s
+    // Angular velocity, as a rotation vector:
+    // - the direction of this vector is its axis of rotation
+    // - its magnitude is the rotation speed in rad/s
     UPROPERTY()
     FVector angular_velocity_radians_world;
 
@@ -42,7 +44,7 @@ public:
     UPROPERTY()
     FVector accumulated_force_world;
 
-    // In N·m·rad (rad·kg·m^2/s^2)
+    // In N·m·rad (rad·kg·m^2/s^2), as a rotation vector
     UPROPERTY()
     FVector accumulated_torque_world;
 
@@ -51,7 +53,7 @@ public:
     // Force in N (kg·m/s^2)
     void add_force(const FVector& force);
 
-    // Torque in N·m (kg·m^2/s^2)
+    // Torque in N·m (kg·m^2/s^2), as a rotation vector
     void add_torque(const FVector& torque);
 
     // force_world in N (kg·m/s^2), location_local in unreal units
