@@ -1,7 +1,6 @@
 #include "DroneSimulator/Gameplay/DronePawn.h"
 #include "DroneSimulator/Gameplay/DroneMovementComponent.h"
 
-#include "Kismet/GameplayStatics.h"
 
 ADronePawn::ADronePawn()
 {
