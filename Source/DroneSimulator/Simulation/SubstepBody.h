@@ -20,7 +20,8 @@ public:
     UPROPERTY()
     double mass;
 
-    // In kg·m^2
+    // In kg·m^2, in local space.
+    // These are the diagonal coefficients of the matrix, because in local space the matrix is diagonal
     UPROPERTY()
     FVector inertia_tensor;
 
@@ -64,6 +65,8 @@ public:
      */
     void consume_forces_and_torques(double substep_delta_time);
 
+	FVector get_gyroscopic_torque_local() const;
+	
 public:
 
     // location_local is in unreal units, output is in m/s
