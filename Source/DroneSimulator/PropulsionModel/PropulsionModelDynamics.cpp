@@ -23,10 +23,10 @@ TOptional<FDynamicsPropellerSetInfo> UPropulsionModelDynamics::tick_propulsion(d
     const auto* battery = drone_setup.battery;
     const auto* frame = drone_setup.frame;
 
-    const auto front_left_throttle = propeller_set_throttle.front_left_throttle;
-    const auto front_right_throttle = propeller_set_throttle.front_right_throttle;
-    const auto rear_left_throttle = propeller_set_throttle.rear_left_throttle;
-    const auto rear_right_throttle = propeller_set_throttle.rear_right_throttle;
+    const auto front_left_throttle = propeller_set_throttle.front_left;
+    const auto front_right_throttle = propeller_set_throttle.front_right;
+    const auto rear_left_throttle = propeller_set_throttle.rear_left;
+    const auto rear_right_throttle = propeller_set_throttle.rear_right;
 
     const auto result_front_left = rotor_model->simulate_propeller_rotor(substep_body, front_left_throttle, propeller,
         motor, battery, frame->props_extent_front * FVector(1.0, -1.0, 1.0), true, simulation_world);

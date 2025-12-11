@@ -33,6 +33,12 @@ public:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Rates")
 	double throttle_factor = 0.6;
 
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Rates")
+	double min_throttle = 0.05;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Rates")
+	double min_dynamic_throttle = 0.02;
+
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="PID", meta=(DisplayName="Pitch PID"))
 	FPidConfig pitch_pid = FPidConfig { 0.02, 0.06, 0.0 };
 
