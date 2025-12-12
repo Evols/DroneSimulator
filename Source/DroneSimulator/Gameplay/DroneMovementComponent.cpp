@@ -171,15 +171,16 @@ void UDroneMovementComponent::calculate_thrust_custom_physics(float delta_time, 
 
 void UDroneMovementComponent::calculate_drag_custom_physics(float delta_time, FSubstepBody* substep_body)
 {
-	if (!this->frame.IsSet())
+	if (!this->frame.IsSet() || !this->propeller_bemt.IsSet())
 	{
 		return;
 	}
 
 	const auto frame_value = this->frame.GetValue();
+	const auto propeller_value = this->propeller_bemt.GetValue();
 	auto* simulation_world = NewObject<USimulationWorld>();
 
-	simulation::calculate_linear_drag(substep_body, frame_value, simulation_world);
+	simulation::calculate_linear_drag(substep_body, frame_value, propeller_value, simulation_world);
 
 	simulation::calculate_rotational_drag(substep_body, frame_value, simulation_world);
 }
