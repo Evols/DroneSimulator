@@ -31,9 +31,6 @@ class UPidDroneController : public UDroneController
 public:
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Rates")
-	double throttle_factor = 0.6;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Rates")
 	double min_throttle = 0.05;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Rates")

@@ -7,8 +7,10 @@
 double compute_motor_angular_speed(double throttle, const FDroneMotor* motor, const FDroneBattery* battery)
 {
 	const double motor_voltage = FMath::Clamp(throttle, 0.0, 1.0) * battery->voltage;
+	constexpr auto motor_load = 0.7;
+
 	// Motor.Kv is in radians per second per volt, not in RPM per volt
-	return motor->kv * motor_voltage;
+	return motor->kv * motor_voltage * motor_load;
 }
 
 TTuple<FPropellerSimInfo, FDebugLog> simulation_bemt::simulate_propeller_thrust(FSubstepBody* substep_body, double throttle,

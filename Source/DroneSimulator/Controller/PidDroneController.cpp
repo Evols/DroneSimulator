@@ -11,7 +11,7 @@ FPropellerSetThrottle UPidDroneController::tick_controller(float delta_time, con
 	const auto angular_velocity_error = (setpoint.angular_velocity_radians - current_angular_velocity).BoundToCube(angular_velocity_clamp);
 
 	const auto derivative_angular_velocity_error = (angular_velocity_error - last_angular_velocity_error) / delta_time;
-	last_angular_velocity_error = FMath::VInterpTo(last_angular_velocity_error, angular_velocity_error, delta_time, 1000.f);
+	last_angular_velocity_error = FMath::VInterpTo(last_angular_velocity_error, angular_velocity_error, delta_time, 500.f);
 
 	integrated_angular_velocity_error += angular_velocity_error * delta_time;
 
@@ -26,7 +26,7 @@ FPropellerSetThrottle UPidDroneController::tick_controller(float delta_time, con
 	const auto delta_throttle_roll = delta_throttle_angular.X;
 
 	// The min throttle is applied as a clamp of the input, instead of 
-	const auto global_throttle = FMath::Clamp(setpoint.throttle * this->throttle_factor, this->min_throttle, 1.0);
+	const auto global_throttle = FMath::Clamp(setpoint.throttle, this->min_throttle, 1.0);
 
 	// Throttle values are absolute, in the 0..1 range
 
@@ -44,7 +44,7 @@ FPropellerSetThrottle UPidDroneController::tick_controller(float delta_time, con
 	const auto ideal_throttle_min_axis = FMath::Min(ideal_throttle.front_left, ideal_throttle.front_right, ideal_throttle.rear_left, ideal_throttle.rear_right);
 	if (ideal_throttle_min_axis < this->min_dynamic_throttle)
 	{
-		constexpr auto max_throttle_boost = 0.1f;
+		constexpr auto max_throttle_boost = 0.2f;
 		const auto desired_throttle_boost = this->min_dynamic_throttle - ideal_throttle_min_axis;
 
 		// If the necessary throttle boost is smaller than the max allowed boost, apply it directly
