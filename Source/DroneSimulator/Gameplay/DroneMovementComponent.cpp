@@ -52,7 +52,7 @@ void UDroneMovementComponent::TickComponent(float delta_time, ELevelTick tick_ty
 	const auto vertical_speed = flight_state.linear_velocity_world.Z * 3.6;
 	const auto horizontal_speed = flight_state.linear_velocity_world.Size2D() * 3.6;
 
-	GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Red, FString::Printf(TEXT("Speed: Vertical=%.1f - Horizontal=%.1f"), vertical_speed, horizontal_speed));
+	GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Red, FString::Printf(TEXT("Speed (km/h): Vertical=%.1f - Horizontal=%.1f"), vertical_speed, horizontal_speed));
 
 	this->enqueue_custom_physics();
 }
