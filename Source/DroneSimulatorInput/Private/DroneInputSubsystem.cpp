@@ -10,6 +10,21 @@
 #include "Mac/HIDInputManager.h"
 #endif
 
+namespace
+{
+	static constexpr float SIGNED_AXIS_DEADZONE_LOW_PRECISION = 0.05f;
+	static constexpr float SIGNED_AXIS_DEADZONE_HIGH_PRECISION = 0.01f;
+
+	static float get_signed_axis_deadzone(EDroneInputPrecisionMode precision_mode)
+	{
+		UE_LOG(LogTemp, Log, TEXT("get_signed_axis_deadzone -> precision_mode=%d"), precision_mode);
+		
+		return precision_mode == EDroneInputPrecisionMode::HighPrecision
+			? SIGNED_AXIS_DEADZONE_HIGH_PRECISION
+			: SIGNED_AXIS_DEADZONE_LOW_PRECISION;
+	}
+} // namespace
+
 void UDroneInputSubsystem::Initialize(FSubsystemCollectionBase &Collection) {
 	Super::Initialize(Collection);
 
@@ -58,8 +73,6 @@ void UDroneInputSubsystem::Tick(float DeltaTime) {
 	FHIDInputManager::get().poll_devices(this);
 }
 
-static constexpr float SIGNED_AXIS_DEADZONE = 0.05f;
-
 static float apply_unsigned_axis_invert(float calibrated_value,
 																				bool is_inverted) {
 	return is_inverted ? 1.f - calibrated_value : calibrated_value;
@@ -87,8 +100,7 @@ compute_unsigned_throttle_value(float raw_value,
 }
 
 static float
-compute_signed_axis_value(float raw_value,
-													const FAxisCalibrationData *calibration) {
+compute_signed_axis_value(float raw_value, const FAxisCalibrationData *calibration, float signed_axis_deadzone) {
 	if (calibration == nullptr) {
 		return 0.f;
 	}
@@ -120,16 +132,16 @@ compute_signed_axis_value(float raw_value,
 		axis_value = (processed_value - center_norm) / upper_span;
 	}
 
-	if (FMath::Abs(axis_value) < SIGNED_AXIS_DEADZONE) {
+	if (FMath::Abs(axis_value) < signed_axis_deadzone) {
 		axis_value = 0.f;
 	}
 
 	return FMath::Clamp(axis_value, -1.0f, 1.0f);
 }
 
-static float
-compute_signed_throttle_value(float raw_value,
-															const FAxisCalibrationData *calibration) {
+static float compute_signed_throttle_value(float raw_value, const FAxisCalibrationData *calibration,
+	float signed_axis_deadzone)
+{
 	if (calibration == nullptr) {
 		return 0.f;
 	}
@@ -138,39 +150,36 @@ compute_signed_throttle_value(float raw_value,
 
 	// If using a controller with a zero value that's the min value as well, we're
 	// in a drone style controller, with no auto centering
-	if (!FMath::IsNearlyZero(range) &&
-			FMath::Abs(calibration->zero_value - calibration->min_value) / range <
-					0.25f) {
-		const auto unclamped =
-				(raw_value - calibration->min_value) / range * 2.f - 1.f;
+	if (!FMath::IsNearlyZero(range) && FMath::Abs(calibration->zero_value - calibration->min_value) / range < 0.25f)
+	{
+		const auto unclamped = (raw_value - calibration->min_value) / range * 2.f - 1.f;
+
 		float val = FMath::Clamp(unclamped, -1.f, 1.f);
-		if (FMath::Abs(val) < SIGNED_AXIS_DEADZONE) {
+		if (FMath::Abs(val) < signed_axis_deadzone) {
 			val = 0.f;
 		}
+
 		return val;
 	}
 
-	return compute_signed_axis_value(raw_value, calibration);
+	return compute_signed_axis_value(raw_value, calibration, signed_axis_deadzone);
 }
 
-static float
-calibrate_axis_value(EDroneInputAxis axis, float raw_value,
-										 const FAxisCalibrationData *calibration, bool is_inverted,
-										 EThrottleCalibrationSpace throttle_calibration_space) {
-	if (axis == EDroneInputAxis::Throttle) {
-		if (throttle_calibration_space ==
-				EThrottleCalibrationSpace::PositiveNegative) {
-			const float signed_value =
-					compute_signed_throttle_value(raw_value, calibration);
+static float calibrate_axis_value(EDroneInputAxis axis, float raw_value, const FAxisCalibrationData *calibration,
+	bool is_inverted, EThrottleCalibrationSpace throttle_calibration_space, float signed_axis_deadzone)
+{
+	if (axis == EDroneInputAxis::Throttle)
+	{
+		if (throttle_calibration_space == EThrottleCalibrationSpace::PositiveNegative) {
+			const float signed_value = compute_signed_throttle_value(raw_value, calibration, signed_axis_deadzone);
 			return apply_signed_axis_invert(signed_value, is_inverted);
 		}
 
-		const float unsigned_value =
-				compute_unsigned_throttle_value(raw_value, calibration);
+		const float unsigned_value = compute_unsigned_throttle_value(raw_value, calibration);
 		return apply_unsigned_axis_invert(unsigned_value, is_inverted);
 	}
 
-	const float signed_value = compute_signed_axis_value(raw_value, calibration);
+	const float signed_value = compute_signed_axis_value(raw_value, calibration, signed_axis_deadzone);
 	return apply_signed_axis_invert(signed_value, is_inverted);
 }
 
@@ -332,9 +341,8 @@ float UDroneInputSubsystem::get_calibrated_axis_value(
 								device_calibration->Find(mapping.input_device_axis_name);
 					}
 
-					return calibrate_axis_value(axis, *raw_value, calibration,
-																			mapping.is_inverted,
-																			throttle_calibration_space);
+					return calibrate_axis_value(axis, *raw_value, calibration, mapping.is_inverted,
+						throttle_calibration_space, get_signed_axis_deadzone(precision_mode));
 				}
 			}
 		}
@@ -343,10 +351,12 @@ float UDroneInputSubsystem::get_calibrated_axis_value(
 	return 0.f;
 }
 
-float UDroneInputSubsystem::get_raw_axis_value(int32 device_id,
-																							 FName axis_name) const {
-	if (const FDroneInputDevice *device = devices.Find(device_id)) {
-		if (const float *val = device->raw_axes.Find(axis_name)) {
+float UDroneInputSubsystem::get_raw_axis_value(int32 device_id, FName axis_name) const
+{
+	if (const FDroneInputDevice *device = devices.Find(device_id))
+	{
+		if (const float *val = device->raw_axes.Find(axis_name))
+		{
 			return *val;
 		}
 	}
@@ -408,4 +418,14 @@ void UDroneInputSubsystem::set_axis_inverted(int32 device_id,
 			}
 		}
 	}
+}
+
+void UDroneInputSubsystem::set_precision_mode(EDroneInputPrecisionMode in_precision_mode)
+{
+	this->precision_mode = in_precision_mode;
+}
+
+EDroneInputPrecisionMode UDroneInputSubsystem::get_precision_mode() const
+{
+	return this->precision_mode;
 }

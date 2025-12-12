@@ -28,6 +28,13 @@ enum class EDroneCalibrationPhase : uint8
     MeasuringLimits  // Phase 2: User wiggles sticks to find min/max
 };
 
+UENUM(BlueprintType)
+enum class EDroneInputPrecisionMode : uint8
+{
+    LowPrecision,
+    HighPrecision
+};
+
 USTRUCT(BlueprintType)
 struct FInputAxisMapping
 {

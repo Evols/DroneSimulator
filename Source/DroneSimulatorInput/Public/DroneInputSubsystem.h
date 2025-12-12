@@ -68,6 +68,12 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Drone Input")
     void set_axis_inverted(int32 device_id, EDroneInputAxis axis, bool inverted);
 
+    UFUNCTION(BlueprintCallable, Category = "Drone Input")
+    void set_precision_mode(EDroneInputPrecisionMode in_precision_mode);
+
+    UFUNCTION(BlueprintPure, Category = "Drone Input")
+    EDroneInputPrecisionMode get_precision_mode() const;
+
     UPROPERTY(BlueprintAssignable, Category = "Drone Input")
     FOnAxisMapped on_axis_mapped;
 
@@ -93,4 +99,6 @@ protected:
     TSharedPtr<FDroneInputProfileManager> profile_manager;
 
     void reset_calibration_state_for_device(int32 device_id);
+
+    EDroneInputPrecisionMode precision_mode = EDroneInputPrecisionMode::LowPrecision;
 };

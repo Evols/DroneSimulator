@@ -6,6 +6,7 @@
 #include "DroneSimulator/Simulation/Inertia.h"
 #include "DroneSimulator/Simulation/LinearDrag.h"
 #include "DroneSimulator/Simulation/RotationalDrag.h"
+#include "DroneSimulator/Controller/FlightModeAir.h"
 #include "DroneSimulator/Simulation/SimulationWorld.h"
 #include "DroneSimulator/Simulation/SubstepBody.h"
 #include "DroneSimulatorInput/Public/DroneInputSubsystem.h"
@@ -294,6 +295,12 @@ FDronePlayerInput UDroneMovementComponent::read_player_input(const UFlightModeBa
 	const EThrottleCalibrationSpace throttle_calibration_space = active_mode != nullptr
 		? active_mode->get_throttle_calibration_space()
 		: EThrottleCalibrationSpace::PositiveOnly;
+	EDroneInputPrecisionMode precision_mode = EDroneInputPrecisionMode::LowPrecision;
+
+	if (active_mode != nullptr && active_mode->IsA(UFlightModeAir::StaticClass()))
+	{
+		precision_mode = EDroneInputPrecisionMode::HighPrecision;
+	}
 
 	const auto* pawn = this->GetPawnOwner();
 	if (!pawn)
@@ -310,8 +317,9 @@ FDronePlayerInput UDroneMovementComponent::read_player_input(const UFlightModeBa
 
 	if (const auto* game_instance = pawn->GetGameInstance())
 	{
-		if (const auto* input_subsystem = game_instance->GetSubsystem<UDroneInputSubsystem>())
+		if (auto* input_subsystem = game_instance->GetSubsystem<UDroneInputSubsystem>())
 		{
+			input_subsystem->set_precision_mode(precision_mode);
 			input.throttle = input_subsystem->get_calibrated_axis_value(EDroneInputAxis::Throttle, throttle_calibration_space);
 			input.yaw = input_subsystem->get_calibrated_axis_value(EDroneInputAxis::Yaw);
 			input.pitch = -input_subsystem->get_calibrated_axis_value(EDroneInputAxis::Pitch);
