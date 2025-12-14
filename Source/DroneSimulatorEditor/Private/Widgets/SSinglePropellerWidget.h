@@ -4,7 +4,7 @@
 #include "Runtime/SlateCore/Public/Widgets/DeclarativeSyntaxSupport.h"
 #include "Runtime/SlateCore/Public/Widgets/SCompoundWidget.h"
 
-#include "DroneSimulator/Gameplay/DroneMovementComponent.h"
+#include "DroneSimulatorGame/Gameplay/DroneMovementComponent.h"
 
 /**
  * Widget that displays a single propeller's information

@@ -1,5 +1,5 @@
 #include "TypeActions/AssetTypeActions_DroneAirfoilSimplified.h"
-#include "DroneSimulator/Assets/DroneAirfoilAsset.h"
+#include "DroneSimulatorGame/Assets/DroneAirfoilAsset.h"
 
 #define LOCTEXT_NAMESPACE "AssetTypeActions"
 

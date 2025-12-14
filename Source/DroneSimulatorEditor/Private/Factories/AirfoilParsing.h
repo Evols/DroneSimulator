@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "DroneSimulator/Assets/DroneAirfoilAsset.h"
+#include "DroneSimulatorGame/Assets/DroneAirfoilAsset.h"
 #include "Misc/FileHelper.h"
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonReader.h"

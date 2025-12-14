@@ -2,7 +2,7 @@
 #include "DroneSimulatorEditor/Private/Widgets/SFlightDataWidget.h"
 #include "DroneSimulatorEditor/Private/Widgets/SPropellerDisplayWidget.h"
 #include "DroneSimulatorEditor/Private/Widgets/STimelineTrack.h"
-#include "DroneSimulator/Assets/FlightRecordAsset.h"
+#include "DroneSimulatorGame/Assets/FlightRecordAsset.h"
 #include "DroneSimulatorEditor/Private/Playback/FlightPlaybackManager.h"
 
 #include "Runtime/Slate/Public/Widgets/Layout/SBox.h"

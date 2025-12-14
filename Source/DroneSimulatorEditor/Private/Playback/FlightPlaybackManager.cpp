@@ -1,6 +1,6 @@
 #include "DroneSimulatorEditor/Private/Playback/FlightPlaybackManager.h"
 #include "DroneSimulatorEditor/Private/Playback/FlightPlaybackVisualizationActor.h"
-#include "DroneSimulator/Assets/FlightRecordAsset.h"
+#include "DroneSimulatorGame/Assets/FlightRecordAsset.h"
 
 #include "Editor.h"
 #include "EditorViewportClient.h"

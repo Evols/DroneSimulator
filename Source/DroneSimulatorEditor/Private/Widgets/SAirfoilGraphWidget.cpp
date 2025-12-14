@@ -1,5 +1,5 @@
 #include "SAirfoilGraphWidget.h"
-#include "DroneSimulator/Assets/DroneAirfoilAsset.h"
+#include "DroneSimulatorGame/Assets/DroneAirfoilAsset.h"
 #include "Rendering/DrawElements.h"
 #include "Fonts/FontMeasure.h"
 #include "Framework/Application/SlateApplication.h"

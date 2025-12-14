@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/StaticMeshComponent.h"
-#include "DroneSimulator/Assets/FlightRecordAsset.h"
+#include "DroneSimulatorGame/Assets/FlightRecordAsset.h"
 
 #include "FlightPlaybackVisualizationActor.generated.h"
 

@@ -16,13 +16,21 @@
 	"Installed": false,
 	"Modules": [
 		{
-			"Name": "DroneSimulator",
+			"Name": "DroneSimulatorCore",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
 				"Engine"
 			]
 		},
+        {
+            "Name": "DroneSimulatorGame",
+            "Type": "Runtime",
+            "LoadingPhase": "Default",
+            "AdditionalDependencies": [
+                "Engine"
+            ]
+        },
 		{
 			"Name": "DroneSimulatorInput",
 			"Type": "Runtime",

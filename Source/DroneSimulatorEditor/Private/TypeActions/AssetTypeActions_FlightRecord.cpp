@@ -1,5 +1,5 @@
 #include "TypeActions/AssetTypeActions_FlightRecord.h"
-#include "DroneSimulator/Assets/FlightRecordAsset.h"
+#include "DroneSimulatorGame/Assets/FlightRecordAsset.h"
 #include "DroneSimulatorEditor/Public/DroneSimulatorEditor.h"
 #include "Modules/ModuleManager.h"
 

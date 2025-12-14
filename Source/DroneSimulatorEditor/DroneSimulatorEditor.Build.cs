@@ -23,13 +23,19 @@ public class DroneSimulatorEditor : ModuleRules
 			"AssetRegistry",
 			"EditorStyle",
 			"ToolMenus",
-			"DroneSimulator",
 			"WorkspaceMenuStructure",
 			"InputCore",
 			"LevelEditor",
 			"PropertyEditor",
 			"Json",
 			"JsonUtilities"
+		});
+		
+		PublicDependencyModuleNames.AddRange(new string[]
+		{
+			"DroneSimulatorGame",
+			"DroneSimulatorCore",
+			"DroneSimulatorInput",
 		});
 	}
 }

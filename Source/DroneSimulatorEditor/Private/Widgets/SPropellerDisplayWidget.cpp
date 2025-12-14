@@ -1,7 +1,7 @@
 #include "DroneSimulatorEditor/Private/Widgets/SPropellerDisplayWidget.h"
 #include "DroneSimulatorEditor/Private/Widgets/SSinglePropellerWidget.h"
 #include "DroneSimulatorEditor/Private/Playback/FlightPlaybackManager.h"
-#include "DroneSimulator/Gameplay/Recording/FlightRecord.h"
+#include "DroneSimulatorGame/Gameplay/Recording/FlightRecord.h"
 
 #include "Runtime/Slate/Public/Widgets/Layout/SBorder.h"
 #include "Runtime/Slate/Public/Widgets/Layout/SBox.h"

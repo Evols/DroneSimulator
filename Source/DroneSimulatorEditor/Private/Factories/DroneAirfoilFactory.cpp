@@ -1,5 +1,5 @@
 #include "DroneSimulatorEditor/Private/Factories/DroneAirfoilFactory.h"
-#include "DroneSimulator/Assets/DroneAirfoilAsset.h"
+#include "DroneSimulatorGame/Assets/DroneAirfoilAsset.h"
 #include "DroneSimulatorEditor/Private/Factories/AirfoilParsing.h"
 #include "DroneSimulatorEditor/Private/Factories/AeroTableCSVParsing.h"
 #include "Misc/FileHelper.h"

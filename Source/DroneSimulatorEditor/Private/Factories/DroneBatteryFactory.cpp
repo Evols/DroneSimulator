@@ -1,6 +1,6 @@
 #include "DroneSimulatorEditor/Private/Factories/DroneBatteryFactory.h"
 
-#include "DroneSimulator/Assets/DroneBatteryAsset.h"
+#include "DroneSimulatorGame/Assets/DroneBatteryAsset.h"
 #include "Developer/AssetTools/Public/IAssetTools.h"
 #include "Developer/AssetTools/Public/AssetToolsModule.h"
 

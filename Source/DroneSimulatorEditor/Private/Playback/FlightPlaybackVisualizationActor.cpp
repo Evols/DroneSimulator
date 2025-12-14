@@ -1,5 +1,5 @@
 #include "FlightPlaybackVisualizationActor.h"
-#include "DroneSimulator/Assets/FlightRecordAsset.h"
+#include "DroneSimulatorGame/Assets/FlightRecordAsset.h"
 #include "UObject/ConstructorHelpers.h"
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"

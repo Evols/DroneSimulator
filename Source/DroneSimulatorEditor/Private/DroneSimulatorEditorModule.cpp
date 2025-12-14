@@ -9,8 +9,8 @@
 #include "DroneSimulatorEditor/Private/Widgets/STimelinePanel.h"
 #include "DroneSimulatorEditor/Private/Playback/FlightPlaybackManager.h"
 #include "DroneSimulatorEditor/Private/Details/DroneAirfoilAssetDetails.h"
-#include "DroneSimulator/Assets/FlightRecordAsset.h"
-#include "DroneSimulator/Assets/DroneAirfoilAsset.h"
+#include "DroneSimulatorGame/Assets/FlightRecordAsset.h"
+#include "DroneSimulatorGame/Assets/DroneAirfoilAsset.h"
 
 #include "AssetToolsModule.h"
 #include "IAssetTools.h"

@@ -1,6 +1,6 @@
 #include "DroneSimulatorEditor/Private/Widgets/SFlightDataWidget.h"
 #include "DroneSimulatorEditor/Private/Playback/FlightPlaybackManager.h"
-#include "DroneSimulator/Gameplay/Recording/FlightRecord.h"
+#include "DroneSimulatorGame/Gameplay/Recording/FlightRecord.h"
 
 #include "Runtime/Slate/Public/Widgets/Layout/SBox.h"
 #include "Runtime/Slate/Public/Widgets/Text/STextBlock.h"
