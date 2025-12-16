@@ -37,8 +37,7 @@ void UDroneInputSubsystem::Initialize(FSubsystemCollectionBase &Collection) {
 	}
 
 	FHIDInputManager::get().initialize();
-	UE_LOG(LogDroneSimulatorInput, Log,
-				 TEXT("UDroneInputManager::Initialize - Input System Initialized"));
+	UE_LOG(LogDroneSimulatorInput, Log, TEXT("UDroneInputManager::Initialize - Input System Initialized"));
 }
 
 void UDroneInputSubsystem::Deinitialize() {
