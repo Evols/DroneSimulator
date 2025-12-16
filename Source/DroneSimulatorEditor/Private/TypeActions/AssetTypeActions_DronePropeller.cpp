@@ -10,8 +10,8 @@ FText FAssetTypeActions_DronePropellerBemt::GetName() const
 
 FColor FAssetTypeActions_DronePropellerBemt::GetTypeColor() const
 {
-	// oklch(0.827 0.078 6.804)
-	return FColor::FromHex("f3b2be");
+	// oklch(0.6529 0.1623 6.804)
+	return FColor::FromHex("df5e7f");
 }
 
 UClass* FAssetTypeActions_DronePropellerBemt::GetSupportedClass() const

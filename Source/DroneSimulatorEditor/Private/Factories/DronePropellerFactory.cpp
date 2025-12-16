@@ -9,14 +9,14 @@
 
 UDronePropellerBemtFactory::UDronePropellerBemtFactory()
 {
-	SupportedClass = UDronePropellerAsset::StaticClass();
+	SupportedClass = UDronePropellerBemtAsset::StaticClass();
 	bCreateNew = true;
 	bEditAfterNew = true;
 }
 
 UObject* UDronePropellerBemtFactory::FactoryCreateNew(UClass* InClass, UObject* InParent, FName InName, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn, FName CallingContext)
 {
-	return NewObject<UDronePropellerAsset>(InParent, InClass, InName, Flags);
+	return NewObject<UDronePropellerBemtAsset>(InParent, InClass, InName, Flags);
 }
 
 uint32 UDronePropellerBemtFactory::GetMenuCategories() const
