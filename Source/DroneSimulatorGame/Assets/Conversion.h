@@ -4,6 +4,8 @@
 #include "DroneSimulatorCore/Public/Simulation/Structural.h"
 #include "Misc/Optional.h"
 
+class UDronePropellerSimplifiedAsset;
+class UDronePropellerBemtAsset;
 class UDroneAirfoilAssetBase;
 class UDroneBatteryAsset;
 class UDroneMotorAsset;
@@ -12,9 +14,11 @@ class UDronePropellerAsset;
 
 namespace conversion
 {
-	TOptional<FDronePropellerBemt> convert_propeller_bemt_asset(const UDronePropellerAsset* asset);
+	TOptional<TDronePropeller> convert_propeller_asset(const UDronePropellerAsset* asset);
 
-	TOptional<FDronePropellerSimplified> convert_propeller_simplified_asset(const UDronePropellerAsset* asset);
+	FDronePropellerBemt convert_propeller_bemt_asset(const UDronePropellerBemtAsset* asset);
+
+	FDronePropellerSimplified convert_propeller_simplified_asset(const UDronePropellerSimplifiedAsset* asset);
 
 	FDroneAirfoil convert_airfoil_asset(const UDroneAirfoilAssetBase* asset);
 

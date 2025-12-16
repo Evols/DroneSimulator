@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "Structural.h"
 
 struct FDronePropellerBemt;
 struct FSubstepBody;
@@ -10,5 +11,7 @@ class UPrimitiveComponent;
 
 namespace simulation
 {
-	void DRONESIMULATORCORE_API calculate_linear_drag(FSubstepBody* substep_body, const FDroneFrame& frame, const FDronePropellerBemt& propeller, const USimulationWorld* simulation_world);
+	FVector calculate_props_cda(const TDronePropeller& propeller);
+
+	void DRONESIMULATORCORE_API calculate_linear_drag(FSubstepBody* substep_body, const FDroneFrame& frame, const TDronePropeller& propeller, const USimulationWorld* simulation_world);
 }

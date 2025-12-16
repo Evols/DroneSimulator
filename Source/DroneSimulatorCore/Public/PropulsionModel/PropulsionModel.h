@@ -89,10 +89,10 @@ struct DRONESIMULATORCORE_API FPropulsionDroneSetup
 	const FDroneFrame* frame;
 	const FDroneMotor* motor;
 	const FDroneBattery* battery;
-	const FDronePropellerBemt* propeller;
+	const TDronePropeller* propeller;
 
 	FPropulsionDroneSetup(const FDroneFrame* in_frame, const FDroneMotor* in_motor,
-		const FDroneBattery* in_battery, const FDronePropellerBemt* in_propeller);
+		const FDroneBattery* in_battery, const TDronePropeller* in_propeller);
 };
 
 UCLASS(Abstract, EditInlineNew, DefaultToInstanced)

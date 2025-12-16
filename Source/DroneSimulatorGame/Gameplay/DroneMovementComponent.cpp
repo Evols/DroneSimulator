@@ -82,7 +82,7 @@ void UDroneMovementComponent::set_updated_component_inertia()
 		return;
 	}
 
-	const auto inertia = inertia::compute_inertia_uu(this->frame, this->motor, this->propeller_bemt, this->battery);
+	const auto inertia = inertia::compute_inertia_uu(this->frame, this->motor, this->propeller, this->battery);
 
 	auto physics_handle = primitive_component->GetBodyInstance()->GetPhysicsActorHandle();
 	FPhysicsCommand::ExecuteWrite(physics_handle, [inertia](auto handle)
@@ -97,8 +97,7 @@ void UDroneMovementComponent::init_drone_parts()
 	this->frame = this->frame_asset == nullptr ? TOptional<FDroneFrame>() : conversion::convert_frame_asset(this->frame_asset);
 	this->motor = this->motor_asset == nullptr ? TOptional<FDroneMotor>() : conversion::convert_motor_asset(this->motor_asset);
 	this->battery = this->battery_asset == nullptr ? TOptional<FDroneBattery>() : conversion::convert_battery_asset(this->battery_asset);
-	this->propeller_bemt = this->propeller_asset == nullptr ? TOptional<FDronePropellerBemt>() : conversion::convert_propeller_bemt_asset(this->propeller_asset);
-	this->propeller_simplified = this->propeller_asset == nullptr ? TOptional<FDronePropellerSimplified>() : conversion::convert_propeller_simplified_asset(this->propeller_asset);
+	this->propeller = this->propeller_asset == nullptr ? TOptional<TDronePropeller>() : conversion::convert_propeller_asset(this->propeller_asset);
 }
 
 void UDroneMovementComponent::enqueue_custom_physics()
@@ -152,7 +151,7 @@ void UDroneMovementComponent::calculate_custom_physics(float delta_time, FBodyIn
 
 void UDroneMovementComponent::calculate_thrust_custom_physics(float delta_time, FSubstepBody* substep_body)
 {
-	if (this->propulsion_model == nullptr || !this->frame.IsSet() || !this->motor.IsSet() || !this->battery.IsSet() || !this->propeller_bemt.IsSet())
+	if (this->propulsion_model == nullptr || !this->frame.IsSet() || !this->motor.IsSet() || !this->battery.IsSet() || !this->propeller.IsSet())
 	{
 		return;
 	}
@@ -160,7 +159,7 @@ void UDroneMovementComponent::calculate_thrust_custom_physics(float delta_time, 
 	const auto frame_value = this->frame.GetValue();
 	const auto motor_value = this->motor.GetValue();
 	const auto battery_value = this->battery.GetValue();
-	const auto propeller_value = this->propeller_bemt.GetValue();
+	const auto propeller_value = this->propeller.GetValue();
 
 	const auto drone_setup = FPropulsionDroneSetup(&frame_value, &motor_value, &battery_value, &propeller_value);
 
@@ -171,13 +170,13 @@ void UDroneMovementComponent::calculate_thrust_custom_physics(float delta_time, 
 
 void UDroneMovementComponent::calculate_drag_custom_physics(float delta_time, FSubstepBody* substep_body)
 {
-	if (!this->frame.IsSet() || !this->propeller_bemt.IsSet())
+	if (!this->frame.IsSet() || !this->propeller.IsSet())
 	{
 		return;
 	}
 
 	const auto frame_value = this->frame.GetValue();
-	const auto propeller_value = this->propeller_bemt.GetValue();
+	const auto propeller_value = this->propeller.GetValue();
 	auto* simulation_world = NewObject<USimulationWorld>();
 
 	simulation::calculate_linear_drag(substep_body, frame_value, propeller_value, simulation_world);

@@ -108,7 +108,21 @@ struct DRONESIMULATORCORE_API FDronePropellerSimplified
 	GENERATED_BODY()
 
 public:
+
+	// In meters
+	UPROPERTY()
+	double blade_diameter;
+
+	// Thrust coefficient, dimensionless
+	UPROPERTY()
+	double thrust_coefficient;
+
+	// Torque coefficient, dimensionless
+	UPROPERTY()
+	double torque_coefficient;
 };
+
+using TDronePropeller = TVariant<FDronePropellerBemt, FDronePropellerSimplified>;
 
 /**
  * Inside simulation, we want to work with SI units (meters, kilograms, seconds,

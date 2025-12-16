@@ -38,25 +38,7 @@ namespace inertia
 		return (value > 0.0) ? value : fallback;
 	}
 
-	inline double estimate_radius_from_prop_optional(const TOptional<FDronePropellerBemt>& prop_opt)
-	{
-		if (prop_opt.IsSet())
-		{
-			const FDronePropellerBemt& prop = prop_opt.GetValue();
-			// prefer provided radius if positive
-			const double r = safe_positive(prop.radius, default_prop_radius_m);
-			const double prop_diameter = 2.0 * r;
-
-			if (prop_diameter > 0.0)
-			{
-				// true-X: adjacent motor spacing ≈ prop_diameter + gap, so r ≈ spacing / √2
-				const double adjacent_spacing = prop_diameter + prop_disc_gap_m;
-				return adjacent_spacing * DOUBLE_UE_INV_SQRT_2;
-			}
-		}
-		// fallback: classic 5" wheelbase
-		return 0.5 * fallback_wheelbase_m;
-	}
+	double DRONESIMULATORCORE_API estimate_radius_from_prop_optional(const TOptional<TDronePropeller>& prop_opt);
 
 	inline FVector kgm2_to_kgcm2(const FVector& inertia_si)
 	{
@@ -94,7 +76,7 @@ namespace inertia
 	// Core computation (all params optional): diagonal inertia (kg·m²)
 	// ------------------------------------------------------------------
 	inline FVector compute_inertia_si(const TOptional<FDroneFrame>& frame_opt, const TOptional<FDroneMotor>& motor_opt,
-		const TOptional<FDronePropellerBemt>& prop_opt, const TOptional<FDroneBattery>& battery_opt)
+		const TOptional<TDronePropeller>& prop_opt, const TOptional<FDroneBattery>& battery_opt)
 	{
 		// masses with smart fallbacks
 		const FMassBreakdown mb = get_masses(frame_opt, motor_opt, battery_opt);
@@ -139,7 +121,7 @@ namespace inertia
 
 	// Convenience: UE units (kg·cm²)
 	inline FVector compute_inertia_uu(const TOptional<FDroneFrame>& frame_opt, const TOptional<FDroneMotor>& motor_opt,
-		const TOptional<FDronePropellerBemt>& prop_opt, const TOptional<FDroneBattery>& battery_opt)
+		const TOptional<TDronePropeller>& prop_opt, const TOptional<FDroneBattery>& battery_opt)
 	{
 		const FVector inertia_si = compute_inertia_si(frame_opt, motor_opt, prop_opt, battery_opt);
 		return kgm2_to_kgcm2(inertia_si);

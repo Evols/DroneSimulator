@@ -51,4 +51,13 @@ class DRONESIMULATORGAME_API UDronePropellerSimplifiedAsset : public UDronePrope
 
 public:
 
+	/** Tip diameter, in inches (blade length from hub center). */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Drone simulator", meta=(ClampMin="1.2", ClampMax="12", DisplayName="Radius (in inches)"))
+	double diameter_inch = 5.0; // 5 inch
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Drone simulator", meta=(ClampMin="0.05", ClampMax="0.15", DisplayName="Thrust coefficient (dimensionless)"))
+	double thrust_coefficient = 0.1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Drone simulator", meta=(ClampMin="0.005", ClampMax="0.03", DisplayName="Torque coefficient (dimensionless)"))
+	double torque_coefficient = 0.015;
 };

@@ -2,7 +2,7 @@
 
 
 FPropulsionDroneSetup::FPropulsionDroneSetup(const FDroneFrame* in_frame, const FDroneMotor* in_motor,
-    const FDroneBattery* in_battery, const FDronePropellerBemt* in_propeller)
+    const FDroneBattery* in_battery, const TDronePropeller* in_propeller)
     : frame(in_frame), motor(in_motor), battery(in_battery), propeller(in_propeller)
 {
 }

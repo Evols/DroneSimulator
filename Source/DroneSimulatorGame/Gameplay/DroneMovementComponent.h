@@ -88,11 +88,7 @@ protected:
 	UPROPERTY()
 	TOptional<FDroneBattery> battery;
 
-	UPROPERTY()
-	TOptional<FDronePropellerBemt> propeller_bemt;
-
-	UPROPERTY()
-	TOptional<FDronePropellerSimplified> propeller_simplified;
+	TOptional<TDronePropeller> propeller;
 
 	UFUNCTION()
 	void init_drone_parts();

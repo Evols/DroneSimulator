@@ -2,9 +2,35 @@
 #include "DroneSimulatorCore/Public/Simulation/SubstepBody.h"
 #include "DroneSimulatorCore/Public/Simulation/SimulationWorld.h"
 #include "DroneSimulatorCore/Public/Simulation/Structural.h"
+#include "Utils/Variant.h"
 
+double get_props_radius(const TDronePropeller& propeller)
+{
+	return match_variant(
+		propeller,
+		[](const FDronePropellerBemt& propeller_bemt)
+		{
+			return propeller_bemt.radius;
+		},
+		[](const FDronePropellerSimplified& propeller_simplified)
+		{
+			return propeller_simplified.blade_diameter * 0.5;
+		}
+	);
+}
 
-void simulation::calculate_linear_drag(FSubstepBody* substep_body, const FDroneFrame& frame, const FDronePropellerBemt& propeller, const USimulationWorld* simulation_world)
+FVector simulation::calculate_props_cda(const TDronePropeller& propeller)
+{
+	const auto radius = get_props_radius(propeller);
+
+	const auto prop_disc_area = PI * FMath::Square(radius);
+	const auto prop_height = radius * 0.15; // assume the prop height is 15% of its radius
+	const auto prop_side_area = radius * prop_height;
+
+	return FVector(prop_side_area * 2.0 * 0.95, prop_side_area * 2.0 * 0.95, prop_disc_area * 4.0 * 0.95);
+}
+
+void simulation::calculate_linear_drag(FSubstepBody* substep_body, const FDroneFrame& frame, const TDronePropeller& propeller, const USimulationWorld* simulation_world)
 {
 	// We want it in m/s
 
@@ -12,10 +38,7 @@ void simulation::calculate_linear_drag(FSubstepBody* substep_body, const FDroneF
 	const auto frame_cda = frame.area * frame.drag_coefficient;
 
 	// Props cda
-	const auto prop_disc_area = PI * FMath::Square(propeller.radius);
-	const auto prop_height = propeller.radius * 0.15; // assume the prop height is 15% of its radius
-	const auto prop_side_area = propeller.radius * prop_height;
-	const auto props_cda = FVector(prop_side_area * 2.0 * 0.95, prop_side_area * 2.0 * 0.95, prop_disc_area * 4.0 * 0.95);
+	const auto props_cda = calculate_props_cda(propeller);
 
 	const auto total_cda = frame_cda + props_cda;
 

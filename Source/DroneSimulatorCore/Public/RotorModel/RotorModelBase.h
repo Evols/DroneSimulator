@@ -57,6 +57,6 @@ class DRONESIMULATORCORE_API URotorModelBase : public UObject
 public:
 
 	virtual FRotorSimulationResult simulate_propeller_rotor(FSubstepBody* substep_body, double throttle,
-		const FDronePropellerBemt* propeller, const FDroneMotor* motor, const FDroneBattery* battery,
+		const TDronePropeller* propeller, const FDroneMotor* motor, const FDroneBattery* battery,
 		const FVector& propeller_location_local, bool is_clockwise, const USimulationWorld* simulation_world);
 };
