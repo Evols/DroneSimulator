@@ -2,7 +2,6 @@
 #include "DroneSimulatorGame/Assets/Conversion.h"
 #include "DroneSimulatorGame/Gameplay/DronePawn.h"
 #include "DroneSimulatorCore/Public/PropulsionModel/PropulsionModel.h"
-#include "DroneSimulatorCore/Public/RotorModel/Bemt/PropellerThrust.h"
 #include "DroneSimulatorCore/Public/Simulation/Inertia.h"
 #include "DroneSimulatorCore/Public/Simulation/LinearDrag.h"
 #include "DroneSimulatorCore/Public/Simulation/RotationalDrag.h"
@@ -184,28 +183,6 @@ void UDroneMovementComponent::calculate_drag_custom_physics(float delta_time, FS
 	simulation::calculate_linear_drag(substep_body, frame_value, propeller_value, simulation_world);
 
 	simulation::calculate_rotational_drag(substep_body, frame_value, simulation_world);
-}
-
-TTuple<FPropellerPropulsionInfo, FDebugLog> UDroneMovementComponent::apply_propeller_force(FSubstepBody* substep_body, double throttle,
-	bool is_clockwise, const FVector& force_location)
-{
-	ensure(substep_body != nullptr);
-
-	if (!this->battery.IsSet() || !this->motor.IsSet() || !this->propeller_bemt.IsSet())
-	{
-		return TTuple<FPropellerPropulsionInfo, FDebugLog> { FPropellerPropulsionInfo(), FDebugLog() };
-	}
-
-	const auto battery_value = this->battery.GetValue();
-	const auto motor_value = this->motor.GetValue();
-	const auto propeller_value = this->propeller_bemt.GetValue();
-
-	auto* simulation_world = NewObject<USimulationWorld>();
-
-	const auto [sim_output, debug_log] = simulation_bemt::simulate_propeller_thrust(substep_body, throttle, &propeller_value, &motor_value,
-		&battery_value, force_location, is_clockwise, simulation_world);
-
-	return TTuple<FPropellerPropulsionInfo, FDebugLog> { FPropellerPropulsionInfo::from_simulation_output(sim_output, throttle, debug_log), debug_log };
 }
 
 void UDroneMovementComponent::record_flight_data(FSubstepBody* substep_body)

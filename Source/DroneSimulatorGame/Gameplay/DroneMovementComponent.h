@@ -145,9 +145,6 @@ private:
 
 	void calculate_drag_custom_physics(float delta_time, FSubstepBody* substep_body);
 
-	TTuple<FPropellerPropulsionInfo, FDebugLog> apply_propeller_force(FSubstepBody* substep_body, double throttle,
-		bool is_clockwise, const FVector& force_location);
-
 	void record_flight_data(FSubstepBody* substep_body);
 
 private:
