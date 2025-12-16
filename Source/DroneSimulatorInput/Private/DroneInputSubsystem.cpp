@@ -17,8 +17,6 @@ namespace
 
 	static float get_signed_axis_deadzone(EDroneInputPrecisionMode precision_mode)
 	{
-		UE_LOG(LogTemp, Log, TEXT("get_signed_axis_deadzone -> precision_mode=%d"), precision_mode);
-		
 		return precision_mode == EDroneInputPrecisionMode::HighPrecision
 			? SIGNED_AXIS_DEADZONE_HIGH_PRECISION
 			: SIGNED_AXIS_DEADZONE_LOW_PRECISION;
