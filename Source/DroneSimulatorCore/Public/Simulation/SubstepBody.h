@@ -50,11 +50,17 @@ public:
     FVector accumulated_torque_world;
 
 public:
-
-    // Force in N (kg·m/s^2)
+    /**
+     * Adds a force in Newtons (kg·m/s^2) at the center of gravity
+     * @param force Force to apply at the center of gravity, in Newtons, in world space
+     */
     void add_force(const FVector& force);
 
-    // Torque in N·m (kg·m^2/s^2), as a rotation vector
+    /**
+     * Adds a torque in N·m (kg·m^2/s^2) at the center of the object
+     * @param torque Torque in N·m to apply at the center of the object, as a rotation vector in world space
+     * (rotation axis is the direction of the vector, torque value in N·m is the magnitude of the vector)
+     */
     void add_torque(const FVector& torque);
 
     // force_world in N (kg·m/s^2), location_local in unreal units
