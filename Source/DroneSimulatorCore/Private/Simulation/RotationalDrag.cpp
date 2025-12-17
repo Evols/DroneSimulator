@@ -9,7 +9,7 @@ void simulation::calculate_rotational_drag(FSubstepBody* substep_body, const FDr
 	// Rotational aero drag (yaw/pitch/roll), quadratic in angular speed
 	const FVector omega_ws = substep_body->angular_velocity_radians_world;
 	const FVector omega_ls = transform.InverseTransformVectorNoScale(omega_ws);
-	const FVector k_omega(0.001, 0.001, 0.002); // tune per axis (N·m per rad/s^2-ish)
+	const FVector k_omega(0.00010, 0.00010, 0.00005); // tune per axis (N·m per rad/s^2-ish)
 
 	FVector tau_aero_ls(
 		-k_omega.X * omega_ls.X * FMath::Abs(omega_ls.X),
