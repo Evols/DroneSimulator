@@ -47,37 +47,36 @@ FPropellerSetThrottle UPidDroneController::tick_controller(float delta_time, con
 		constexpr auto max_throttle_boost = 0.2f;
 		const auto desired_throttle_boost = this->min_dynamic_throttle - ideal_throttle_min_axis;
 
-		// If the necessary throttle boost is smaller than the max allowed boost, apply it directly
-		if (desired_throttle_boost <= max_throttle_boost)
-		{
-			const auto throttle_boost = desired_throttle_boost;
-			return FPropellerSetThrottle::from_real(global_throttle + throttle_boost) + delta_throttle;
-		}
-
-		// If the necessary throttle boost is greater than the max-allowed boost, scale it down to the max allowed,
-		// and scale down the delta as well
-		constexpr auto throttle_boost = max_throttle_boost;
-		const auto delta_throttle_scale = max_throttle_boost / desired_throttle_boost;
-		return FPropellerSetThrottle::from_real(global_throttle + throttle_boost) + delta_throttle * delta_throttle_scale;
+		// Shift the base throttle up to bring the minimum prop to min_dynamic_throttle
+		const auto throttle_boost = FMath::Min(desired_throttle_boost, static_cast<double>(max_throttle_boost));
+		const auto shifted_throttle = FPropellerSetThrottle::from_real(global_throttle + throttle_boost) + delta_throttle;
+		
+		// Clamp each prop individually to [min_dynamic_throttle, 1.0] - preserve differential, don't scale it
+		return FPropellerSetThrottle(
+			FMath::Clamp(shifted_throttle.front_left, this->min_dynamic_throttle, 1.0),
+			FMath::Clamp(shifted_throttle.front_right, this->min_dynamic_throttle, 1.0),
+			FMath::Clamp(shifted_throttle.rear_left, this->min_dynamic_throttle, 1.0),
+			FMath::Clamp(shifted_throttle.rear_right, this->min_dynamic_throttle, 1.0)
+		);
 	}
 
-	// If any axis of the throttle is above the max dynamic throttle, then we try to fix it
+	// If any axis of the throttle is above 1.0, shift the base throttle down to fit.
+	// Unlike the lower bound handling, we do NOT scale the delta here - we want to preserve
+	// full differential authority for fast axis response (yaw especially).
 	const auto ideal_throttle_max_axis = FMath::Max(ideal_throttle.front_left, ideal_throttle.front_right, ideal_throttle.rear_left, ideal_throttle.rear_right);
 	if (ideal_throttle_max_axis > 1.0)
 	{
-		constexpr auto max_throttle_shrink = 0.1f;
-		const auto desired_throttle_shrink = ideal_throttle_max_axis - 1.0;
-
-		// If the necessary throttle shrink is smaller than the max allowed shrink, apply it directly
-		if (desired_throttle_shrink < max_throttle_shrink)
-		{
-			const auto throttle_shink = desired_throttle_shrink;
-			return FPropellerSetThrottle::from_real(global_throttle - throttle_shink) + delta_throttle;
-		}
-
-		constexpr auto throttle_shink = max_throttle_shrink;
-		const auto delta_throttle_scale = max_throttle_shrink / desired_throttle_shrink;
-		return FPropellerSetThrottle::from_real(global_throttle - throttle_shink) + delta_throttle * delta_throttle_scale;
+		// Shift base throttle down so the max prop reaches 1.0
+		const auto throttle_shrink = ideal_throttle_max_axis - 1.0;
+		const auto shifted_throttle = FPropellerSetThrottle::from_real(global_throttle - throttle_shrink) + delta_throttle;
+		
+		// Clamp each prop individually to [min_dynamic_throttle, 1.0]
+		return FPropellerSetThrottle(
+			FMath::Clamp(shifted_throttle.front_left, this->min_dynamic_throttle, 1.0),
+			FMath::Clamp(shifted_throttle.front_right, this->min_dynamic_throttle, 1.0),
+			FMath::Clamp(shifted_throttle.rear_left, this->min_dynamic_throttle, 1.0),
+			FMath::Clamp(shifted_throttle.rear_right, this->min_dynamic_throttle, 1.0)
+		);
 	}
 
 	// If the ideal throttle is in the range, no correction to make, it can be returned as-is
