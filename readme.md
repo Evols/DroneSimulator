@@ -5,18 +5,16 @@ Use it as a reusable C++/Blueprint toolkit to build your own simulators, tools, 
 
 > This plugin is designed to live inside your Unreal project as an engine- and editor-first SDK, not as a ready-made arcade drone game.
 
-## What is it?
+## Features
 
-Drone Simulator is a set of Unreal Engine modules that provide:
-
-- -🔨Modular drone parts: pick your own frame, battery, propellers, and motors, using assets.
-- 🚁 Simulate high-fidely physics (BEMT) or arcade physics.
-- 🕹️ A PID controller that can be tuned.
-- 🚀 High-frequency physics pipeline for multirotor drones.
-- 🛸 Multiple flight modes: race/freestyle or stabilized
-- 🏗️ Built for extensibility: flight modes, physics models and controllers are classes, that you can swap or extend.
-- 🎮 Input and calibration support for drone RC transmitters (EdgeTX, DJI) and other HID devices.
-- 👩‍💻 Editor tooling for authoring airfoil data and inspecting flight logs.
+- -🔨**Modular drone parts**: pick your own frame, battery, propellers, and motors, using assets.
+- 🚁 Simulate **high-fidely physics (BEMT)** or **arcade physics**.
+- 🕹️ A **PID controller** that can be tuned.
+- 🚀 **High-frequency physics** pipeline for multirotor drones.
+- 🛸 Multiple flight modes: **race/freestyle** or **stabilized**
+- 🏗️ Built for **extensibility**: flight modes, physics models and controllers are classes, that you can swap or extend.
+- 🎮 **Input and calibration** support for drone RC transmitters (EdgeTX, DJI) and other HID devices.
+- 👩‍💻 **Editor tooling** for authoring airfoil data and inspecting flight logs.
 
 You drop the plugin into an existing Unreal project and compose the pieces you need.
 
