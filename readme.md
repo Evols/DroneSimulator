@@ -5,17 +5,6 @@ Use it as a reusable C++/Blueprint toolkit to build your own simulators, tools, 
 
 > This plugin is designed to live inside your Unreal project as an engine- and editor-first SDK, not as a ready-made arcade drone game.
 
-## Architecture
-
-This project consists in multiple parts:
-- `Content` contains demo Blueprints implementation and built-in drone parts.
-- `aero_table` consists in Python scripts to build the airfoil lift and drag tables using Xfoil.
-- `Source` contains the C++ source code modules:
-  - `DroneSimulatorCore` is the simulator itself, it mainly include the physics core
-  - `DroneSimulatorInput` allows the support of non-standard gamepads, such as EdgeTX and DJI
-  - `DroneSimulatorGame` wraps the physics core with Unreal Engine classes, to make it available as Pawn, MovementComponent, assets, etc
-  - `DroneSimulatorEditor` provides editor utilities, such as session replay, and asset editor
-
 ## Features
 
 - 🔨**Modular drone parts**: pick your own frame, battery, propellers, and motors, using assets.
@@ -28,6 +17,17 @@ This project consists in multiple parts:
 - 👩‍💻 **Editor tooling** for authoring airfoil data and inspecting flight logs.
 
 You drop the plugin into an existing Unreal project and compose the pieces you need.
+
+## Architecture
+
+This project consists in multiple parts:
+- `Content` contains demo Blueprints implementation and built-in drone parts.
+- `aero_table` consists in Python scripts to build the airfoil lift and drag tables using Xfoil.
+- `Source` contains the C++ source code modules:
+  - `DroneSimulatorCore` is the simulator itself, it mainly include the physics core
+  - `DroneSimulatorInput` allows the support of non-standard gamepads, such as EdgeTX and DJI
+  - `DroneSimulatorGame` wraps the physics core with Unreal Engine classes, to make it available as Pawn, MovementComponent, assets, etc
+  - `DroneSimulatorEditor` provides editor utilities, such as session replay, and asset editor
 
 ## Who is it for?
 
