@@ -1,6 +1,7 @@
 #pragma once
 
 #include "DroneSimulatorGame/Gameplay/Recording/FlightRecord.h"
+#include "DroneSimulatorInput/Public/DroneInputTypes.h"
 #include "Runtime/Engine/Classes/GameFramework/Pawn.h"
 
 #include "DronePawn.generated.h"
@@ -11,6 +12,7 @@ class UInputAction;
 class UDroneMovementComponent;
 class UDroneMovementController;
 class UInputMappingContext;
+struct FInputActionValue;
 
 
 USTRUCT(BlueprintType)
@@ -53,6 +55,64 @@ public:
 
 	virtual UPawnMovementComponent* GetMovementComponent() const override;
 
+protected:
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+
+private:
+	void ensure_input_actions();
+	void ensure_input_mapping_context();
+
+	void handle_throttle_input(const FInputActionValue& value);
+	void handle_yaw_input(const FInputActionValue& value);
+	void handle_pitch_input(const FInputActionValue& value);
+	void handle_roll_input(const FInputActionValue& value);
+	void handle_aux_input(const FInputActionValue& value, int32 aux_index);
+
+	EDroneInputSwitchPosition compute_switch_position(float raw_value) const;
+	void apply_switch_position(EDroneInputSwitchPosition new_position);
+
+	UPROPERTY(Transient)
+	TObjectPtr<UInputMappingContext> input_mapping_context;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> throttle_action;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> yaw_action;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> pitch_action;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> roll_action;
+
+	UPROPERTY(Transient)
+	TArray<TObjectPtr<UInputAction>> aux_actions;
+
+	UPROPERTY(EditAnywhere, Category="Input")
+	int32 input_mapping_priority = 0;
+
+	UPROPERTY(EditAnywhere, Category="Input|Switch")
+	float switch_low_threshold = -0.5f;
+
+	UPROPERTY(EditAnywhere, Category="Input|Switch")
+	float switch_high_threshold = 0.5f;
+
+	UPROPERTY(EditAnywhere, Category="Input|Switch")
+	TMap<EDroneInputSwitchPosition, FName> switch_flight_modes;
+
+	UPROPERTY(EditAnywhere, Category="Input|Switch")
+	int32 switch_aux_channel = 1;
+
+	EDroneInputSwitchPosition current_switch_position = EDroneInputSwitchPosition::Mid;
+
+	bool input_bound = false;
+
+protected:
+	
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category="Input")
+	TArray<float> aux_values;
+
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -66,4 +126,7 @@ public:
 
 	UFUNCTION()
 	[[nodiscard]] TArray<FFlightRecordPawnEvent> consume_flight_record();
+
+	UFUNCTION(BlueprintPure, Category="Input")
+	float get_aux_value(int32 aux_channel) const;
 };

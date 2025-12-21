@@ -8,8 +8,10 @@
 #include "DroneSimulatorCore/Public/Controller/FlightModeAir.h"
 #include "DroneSimulatorCore/Public/Simulation/SimulationWorld.h"
 #include "DroneSimulatorCore/Public/Simulation/SubstepBody.h"
-#include "DroneSimulatorInput/Public/DroneInputSubsystem.h"
+#include "DroneSimulatorInput/Public/DroneInputLocalPlayerSubsystem.h"
 #include "DroneSimulatorInput/Public/DroneInputTypes.h"
+#include "Engine/LocalPlayer.h"
+#include "GameFramework/PlayerController.h"
 
 UDroneMovementComponent::UDroneMovementComponent()
 {
@@ -34,12 +36,38 @@ void UDroneMovementComponent::TickComponent(float delta_time, ELevelTick tick_ty
 {
 	Super::TickComponent(delta_time, tick_type, this_tick_function);
 
-	this->player_input = FDronePlayerInput::zero();
-
 	this->ensure_default_flight_mode();
 	auto* active_mode = this->get_active_flight_mode();
 
-	this->player_input = this->read_player_input(active_mode);
+	const auto* pawn = this->GetPawnOwner();
+	const auto* player_controller = pawn ? Cast<APlayerController>(pawn->Controller) : nullptr;
+	if (!player_controller)
+	{
+		this->player_input = FDronePlayerInput::zero();
+	}
+
+	const EThrottleCalibrationSpace throttle_space = active_mode != nullptr
+		? active_mode->get_throttle_calibration_space()
+		: EThrottleCalibrationSpace::PositiveOnly;
+	EDroneInputPrecisionMode precision_mode = EDroneInputPrecisionMode::LowPrecision;
+
+	if (active_mode != nullptr && active_mode->IsA(UFlightModeAir::StaticClass()))
+	{
+		precision_mode = EDroneInputPrecisionMode::HighPrecision;
+	}
+
+	if (player_controller)
+	{
+		if (ULocalPlayer* local_player = player_controller->GetLocalPlayer())
+		{
+			if (auto* input_subsystem = local_player->GetSubsystem<UDroneInputLocalPlayerSubsystem>())
+			{
+				input_subsystem->set_precision_mode(precision_mode);
+				input_subsystem->set_throttle_calibration_space(throttle_space);
+			}
+		}
+	}
+
 	this->controller_input = this->player_input;
 
 	const auto flight_state = this->build_flight_mode_state(delta_time);
@@ -262,48 +290,6 @@ void UDroneMovementComponent::ensure_default_flight_mode()
 	{
 		this->active_flight_mode = this->flight_modes.CreateConstIterator().Key();
 	}
-}
-
-FDronePlayerInput UDroneMovementComponent::read_player_input(const UFlightModeBase* active_mode)
-{
-	auto input = FDronePlayerInput::zero();
-
-	const EThrottleCalibrationSpace throttle_calibration_space = active_mode != nullptr
-		? active_mode->get_throttle_calibration_space()
-		: EThrottleCalibrationSpace::PositiveOnly;
-	EDroneInputPrecisionMode precision_mode = EDroneInputPrecisionMode::LowPrecision;
-
-	if (active_mode != nullptr && active_mode->IsA(UFlightModeAir::StaticClass()))
-	{
-		precision_mode = EDroneInputPrecisionMode::HighPrecision;
-	}
-
-	const auto* pawn = this->GetPawnOwner();
-	if (!pawn)
-	{
-		return input;
-	}
-
-	// We don't want input on pawns that are not controlled by the player
-	const auto* player_controller = Cast<APlayerController>(pawn->Controller);
-	if (!player_controller)
-	{
-		return input;
-	}
-
-	if (const auto* game_instance = pawn->GetGameInstance())
-	{
-		if (auto* input_subsystem = game_instance->GetSubsystem<UDroneInputSubsystem>())
-		{
-			input_subsystem->set_precision_mode(precision_mode);
-			input.throttle = input_subsystem->get_calibrated_axis_value(EDroneInputAxis::Throttle, throttle_calibration_space);
-			input.yaw = input_subsystem->get_calibrated_axis_value(EDroneInputAxis::Yaw);
-			input.pitch = -input_subsystem->get_calibrated_axis_value(EDroneInputAxis::Pitch);
-			input.roll = input_subsystem->get_calibrated_axis_value(EDroneInputAxis::Roll);
-		}
-	}
-
-	return input;
 }
 
 FFlightModeState UDroneMovementComponent::build_flight_mode_state(float delta_time) const

@@ -10,7 +10,19 @@ enum class EDroneInputAxis : uint8
     Throttle,
     Yaw,
     Pitch,
-    Roll
+    Roll,
+    Aux1,
+    Aux2,
+    Aux3,
+    Aux4,
+    Aux5,
+    Aux6,
+    Aux7,
+    Aux8,
+    Aux9,
+    Aux10,
+    Aux11,
+    Aux12
 };
 
 UENUM(BlueprintType)
@@ -34,6 +46,19 @@ enum class EDroneInputPrecisionMode : uint8
     LowPrecision,
     HighPrecision
 };
+
+UENUM(BlueprintType)
+enum class EDroneInputSwitchPosition : uint8
+{
+    Low,
+    Mid,
+    High
+};
+
+namespace drone_input
+{
+	static constexpr int32 aux_axis_count = 12;
+}
 
 USTRUCT(BlueprintType)
 struct FInputAxisMapping
@@ -82,12 +107,18 @@ struct FDroneInputDevice
     UPROPERTY(BlueprintReadOnly)
     FString device_uid;
 
-    // Map from Axis Name (e.g. "GenericUSBController_Axis1") to current raw value
-    // Map from Axis Name (e.g. "GenericUSBController_Axis1") to current raw value
-    UPROPERTY(BlueprintReadOnly)
-    TMap<FName, float> raw_axes;
+	// Map from Axis Name (e.g. "GenericUSBController_Axis1") to current raw value
+	// Map from Axis Name (e.g. "GenericUSBController_Axis1") to current raw value
+	UPROPERTY(BlueprintReadOnly)
+	TMap<FName, float> raw_axes;
 
-    // Raw Integer values for debugging
-    UPROPERTY(BlueprintReadOnly)
-    TMap<FName, int32> raw_int_axes;
+	// Known axis names observed for this device.
+	TArray<FName> axis_names;
+
+	// Tracks the last frame an axis was updated to avoid stale values.
+	TMap<FName, uint64> raw_axis_frames;
+
+	// Raw Integer values for debugging
+	UPROPERTY(BlueprintReadOnly)
+	TMap<FName, int32> raw_int_axes;
 };

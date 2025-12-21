@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Subsystems/GameInstanceSubsystem.h"
+#include "Subsystems/EngineSubsystem.h"
 #include "DroneInputTypes.h"
 #include "DroneInputSubsystem.generated.h"
 
@@ -15,7 +15,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAxisMapped, EDroneInputAxis, Gam
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnAxisMappedNative, EDroneInputAxis, FName);
 
 UCLASS()
-class DRONESIMULATORINPUT_API UDroneInputSubsystem : public UGameInstanceSubsystem, public FTickableGameObject
+class DRONESIMULATORINPUT_API UDroneInputSubsystem : public UEngineSubsystem, public FTickableGameObject
 {
     GENERATED_BODY()
 
@@ -68,11 +68,17 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Drone Input")
     void set_axis_inverted(int32 device_id, EDroneInputAxis axis, bool inverted);
 
-    UFUNCTION(BlueprintCallable, Category = "Drone Input")
-    void set_precision_mode(EDroneInputPrecisionMode in_precision_mode);
+    bool try_get_calibrated_axis_value_for_user(EDroneInputAxis axis,
+        EThrottleCalibrationSpace throttle_calibration_space,
+        EDroneInputPrecisionMode precision_mode,
+        FPlatformUserId platform_user_id,
+        float& out_value,
+        int32& out_device_id) const;
 
-    UFUNCTION(BlueprintPure, Category = "Drone Input")
-    EDroneInputPrecisionMode get_precision_mode() const;
+    FPlatformUserId get_platform_user_for_device(int32 device_id) const;
+    void set_device_platform_user(int32 device_id, FPlatformUserId platform_user_id);
+    bool is_hid_device(int32 device_id) const;
+    FInputDeviceId get_or_create_input_device_id(int32 device_id, bool is_hid_device);
 
     UPROPERTY(BlueprintAssignable, Category = "Drone Input")
     FOnAxisMapped on_axis_mapped;
@@ -83,7 +89,7 @@ public:
     TSharedPtr<FDroneInputCalibrator> get_calibrator() const { return calibrator; }
 
 protected:
-    void register_device(int32 device_id, const FString& device_name = FString(), const FString& device_uid = FString());
+    void register_device(int32 device_id, const FString& device_name = FString(), const FString& device_uid = FString(), bool is_hid_device = false);
     TSharedPtr<FDroneInputProcessor> input_processor;
 
     UPROPERTY()
@@ -100,5 +106,7 @@ protected:
 
     void reset_calibration_state_for_device(int32 device_id);
 
-    EDroneInputPrecisionMode precision_mode = EDroneInputPrecisionMode::LowPrecision;
+    TSet<int32> hid_device_ids;
+    TMap<int32, FInputDeviceId> device_input_ids;
+    TMap<int32, FPlatformUserId> device_platform_users;
 };

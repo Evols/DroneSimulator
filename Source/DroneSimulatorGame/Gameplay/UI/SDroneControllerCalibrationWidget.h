@@ -7,9 +7,11 @@
 
 class ADronePlayerController;
 class UDroneInputSubsystem;
+class UDroneInputLocalPlayerSubsystem;
 class FDroneInputCalibrator;
 class SDroneCalibrationDeviceList;
 class SDroneCalibrationInteraction;
+class STextComboBox;
 
 // Main Widget
 class DRONESIMULATORGAME_API SDroneControllerCalibrationWidget : public SCompoundWidget
@@ -29,6 +31,7 @@ private:
     TObjectPtr<ADronePlayerController> drone_player_controller;
 
     TWeakObjectPtr<UDroneInputSubsystem> input_subsystem;
+    TWeakObjectPtr<UDroneInputLocalPlayerSubsystem> local_player_subsystem;
 
     // Components
     TSharedPtr<SDroneCalibrationDeviceList> device_list_widget;
@@ -37,12 +40,16 @@ private:
     int32 selected_device_id = -1;
 
     // Calibration Flow
-    TArray<EDroneInputAxis> axes_to_map = { EDroneInputAxis::Throttle, EDroneInputAxis::Yaw, EDroneInputAxis::Pitch, EDroneInputAxis::Roll };
+    TArray<EDroneInputAxis> axes_to_map;
     int32 current_axis_index = 0;
     bool is_calibrating = false;
     bool is_measuring_limits = false;
     bool is_calibration_success = false;
+    TArray<TSharedPtr<FString>> channel_order_options;
+    TSharedPtr<FString> selected_channel_order;
+    FString custom_channel_order = "AETR";
     TWeakPtr<FDroneInputCalibrator> calibrator;
+    TSet<FName> mapped_device_axes;
 
     // Device List Data
     TArray<TSharedPtr<FDroneInputDevice>> device_list_items;
@@ -55,6 +62,7 @@ private:
     FReply on_next_step_clicked();
     FReply on_cancel_clicked();
     FReply on_remove_calibration_clicked();
+    void auto_map_aux_channels();
 
     // Functional Getters
     FText get_instruction_text() const;

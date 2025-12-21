@@ -4,6 +4,7 @@
 #include "DroneInputProfileManager.h"
 #include "DroneSimulatorInput.h"
 #include "Framework/Application/SlateApplication.h"
+#include "GenericPlatform/GenericPlatformInputDeviceMapper.h"
 #if PLATFORM_WINDOWS
 #include "Windows/HIDInputManager.h"
 #elif PLATFORM_MAC
@@ -14,6 +15,7 @@ namespace
 {
 	static constexpr float SIGNED_AXIS_DEADZONE_LOW_PRECISION = 0.05f;
 	static constexpr float SIGNED_AXIS_DEADZONE_HIGH_PRECISION = 0.01f;
+	static constexpr uint64 MAX_STALE_FRAMES = 1;
 
 	static float get_signed_axis_deadzone(EDroneInputPrecisionMode precision_mode)
 	{
@@ -56,13 +58,6 @@ void UDroneInputSubsystem::Deinitialize() {
 }
 
 void UDroneInputSubsystem::Tick(float DeltaTime) {
-	// Also clear raw device data to prevent stuck values if device stops sending
-	// updates
-	for (auto &device_pair : devices) {
-		device_pair.Value.raw_axes.Empty();
-		device_pair.Value.raw_int_axes.Empty();
-	}
-
 	if (!calibrator.IsValid()) {
 		return;
 	}
@@ -189,7 +184,12 @@ void UDroneInputSubsystem::handle_raw_analog_input(int32 device_id, FKey key,
 	// 1. Update Device Raw Data
 	register_device(device_id);
 	FDroneInputDevice &device = devices.FindOrAdd(device_id);
-	device.raw_axes.Add(key.GetFName(), analog_value);
+	const FName axis_name = key.GetFName();
+	device.raw_axes.Add(axis_name, analog_value);
+	if (!device.axis_names.Contains(axis_name)) {
+		device.axis_names.Add(axis_name);
+	}
+	device.raw_axis_frames.Add(axis_name, GFrameCounter);
 
 	// Calibration Logic
 	bool handled_by_calibration =
@@ -224,6 +224,15 @@ void UDroneInputSubsystem::handle_device_disconnected(int32 device_id) {
 		reset_calibration_state_for_device(device_id);
 	}
 
+	if (const FInputDeviceId* input_device_id = device_input_ids.Find(device_id)) {
+		IPlatformInputDeviceMapper::Get().Internal_SetInputDeviceConnectionState(
+			*input_device_id, EInputDeviceConnectionState::Disconnected);
+	}
+
+	hid_device_ids.Remove(device_id);
+	device_input_ids.Remove(device_id);
+	device_platform_users.Remove(device_id);
+
 	if (devices.Contains(device_id)) {
 		FDroneInputDevice device = devices[device_id];
 		devices.Remove(device_id);
@@ -243,7 +252,8 @@ void UDroneInputSubsystem::reset_calibration_state_for_device(int32 device_id) {
 
 void UDroneInputSubsystem::register_device(int32 device_id,
 																					 const FString &device_name,
-																					 const FString &device_uid) {
+																					 const FString &device_uid,
+																					 bool is_hid_device) {
 	// TODO: remove devices
 
 	const bool was_present = devices.Contains(device_id);
@@ -259,6 +269,11 @@ void UDroneInputSubsystem::register_device(int32 device_id,
 
 	if (!device_uid.IsEmpty()) {
 		device.device_uid = device_uid;
+	}
+
+	if (is_hid_device) {
+		hid_device_ids.Add(device_id);
+		get_or_create_input_device_id(device_id, true);
 	}
 
 	if (!was_present) {
@@ -312,40 +327,17 @@ void UDroneInputSubsystem::set_axis_mapping(int32 device_id, FName axis_name,
 
 float UDroneInputSubsystem::get_calibrated_axis_value(
 		EDroneInputAxis axis,
-		EThrottleCalibrationSpace throttle_calibration_space) const {
-	if (!calibrator.IsValid() ||
-			calibrator->get_calibration_phase() != EDroneCalibrationPhase::None) {
-		return 0.0f;
-	}
+		EThrottleCalibrationSpace in_throttle_calibration_space) const {
+	float axis_value = 0.0f;
+	int32 device_id = INDEX_NONE;
+	const FPlatformUserId platform_user_id =
+		IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser();
 
-	for (const auto &device_mapping_pair : device_mappings) {
-		const int32 device_id = device_mapping_pair.Key;
-		const TMap<FName, FInputAxisMapping> &mappings = device_mapping_pair.Value;
+	const bool has_value = try_get_calibrated_axis_value_for_user(
+		axis, in_throttle_calibration_space, EDroneInputPrecisionMode::LowPrecision,
+		platform_user_id, axis_value, device_id);
 
-		for (const auto &mapping_pair : mappings) {
-			const FInputAxisMapping &mapping = mapping_pair.Value;
-			if (mapping.game_axis != axis) {
-				continue;
-			}
-
-			if (const FDroneInputDevice *device = devices.Find(device_id)) {
-				if (const float *raw_value =
-								device->raw_axes.Find(mapping.input_device_axis_name)) {
-					const FAxisCalibrationData *calibration = nullptr;
-					if (const TMap<FName, FAxisCalibrationData> *device_calibration =
-									calibration_data.Find(device_id)) {
-						calibration =
-								device_calibration->Find(mapping.input_device_axis_name);
-					}
-
-					return calibrate_axis_value(axis, *raw_value, calibration, mapping.is_inverted,
-						throttle_calibration_space, get_signed_axis_deadzone(precision_mode));
-				}
-			}
-		}
-	}
-
-	return 0.f;
+	return has_value ? axis_value : 0.0f;
 }
 
 float UDroneInputSubsystem::get_raw_axis_value(int32 device_id, FName axis_name) const
@@ -417,12 +409,142 @@ void UDroneInputSubsystem::set_axis_inverted(int32 device_id,
 	}
 }
 
-void UDroneInputSubsystem::set_precision_mode(EDroneInputPrecisionMode in_precision_mode)
+bool UDroneInputSubsystem::try_get_calibrated_axis_value_for_user(
+	EDroneInputAxis axis,
+	EThrottleCalibrationSpace axis_throttle_calibration_space,
+	EDroneInputPrecisionMode precision_mode,
+	FPlatformUserId platform_user_id,
+	float& out_value,
+	int32& out_device_id) const
 {
-	this->precision_mode = in_precision_mode;
+	out_value = 0.0f;
+	out_device_id = INDEX_NONE;
+
+	if (!platform_user_id.IsValid()) {
+		platform_user_id = IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser();
+	}
+
+	if (!calibrator.IsValid() ||
+			calibrator->get_calibration_phase() != EDroneCalibrationPhase::None) {
+		return false;
+	}
+
+	const uint64 current_frame = GFrameCounter;
+
+	for (const auto& device_mapping_pair : device_mappings) {
+		const int32 device_id = device_mapping_pair.Key;
+		const FPlatformUserId device_user = get_platform_user_for_device(device_id);
+		if (device_user.IsValid() && platform_user_id.IsValid() && device_user != platform_user_id) {
+			continue;
+		}
+
+		const TMap<FName, FInputAxisMapping>& mappings = device_mapping_pair.Value;
+
+		for (const auto& mapping_pair : mappings) {
+			const FInputAxisMapping& mapping = mapping_pair.Value;
+			if (mapping.game_axis != axis) {
+				continue;
+			}
+
+			if (const FDroneInputDevice* device = devices.Find(device_id)) {
+				const uint64* last_frame = device->raw_axis_frames.Find(mapping.input_device_axis_name);
+				if (!last_frame || current_frame - *last_frame > MAX_STALE_FRAMES) {
+					continue;
+				}
+
+				if (const float* raw_value =
+								device->raw_axes.Find(mapping.input_device_axis_name)) {
+					const FAxisCalibrationData* calibration = nullptr;
+					if (const TMap<FName, FAxisCalibrationData>* device_calibration =
+									calibration_data.Find(device_id)) {
+						calibration =
+								device_calibration->Find(mapping.input_device_axis_name);
+					}
+
+					out_value = calibrate_axis_value(axis, *raw_value, calibration,
+						mapping.is_inverted, axis_throttle_calibration_space,
+						get_signed_axis_deadzone(precision_mode));
+					out_device_id = device_id;
+					return true;
+				}
+			}
+		}
+	}
+
+	return false;
 }
 
-EDroneInputPrecisionMode UDroneInputSubsystem::get_precision_mode() const
+FPlatformUserId UDroneInputSubsystem::get_platform_user_for_device(int32 device_id) const
 {
-	return this->precision_mode;
+	if (const FPlatformUserId* cached_user = device_platform_users.Find(device_id)) {
+		return *cached_user;
+	}
+
+	FInputDeviceId input_device_id = FInputDeviceId::CreateFromInternalId(device_id);
+	if (const FInputDeviceId* hid_id = device_input_ids.Find(device_id)) {
+		input_device_id = *hid_id;
+	}
+
+	FPlatformUserId platform_user_id =
+		IPlatformInputDeviceMapper::Get().GetUserForInputDevice(input_device_id);
+	if (!platform_user_id.IsValid()) {
+		platform_user_id = IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser();
+	}
+
+	return platform_user_id;
+}
+
+void UDroneInputSubsystem::set_device_platform_user(int32 device_id,
+	FPlatformUserId platform_user_id)
+{
+	if (!platform_user_id.IsValid()) {
+		return;
+	}
+
+	device_platform_users.Add(device_id, platform_user_id);
+
+	const bool is_hid = hid_device_ids.Contains(device_id);
+	const FInputDeviceId input_device_id =
+		get_or_create_input_device_id(device_id, is_hid);
+
+	if (input_device_id.IsValid()) {
+		IPlatformInputDeviceMapper::Get().Internal_MapInputDeviceToUser(
+			input_device_id, platform_user_id, EInputDeviceConnectionState::Connected);
+	}
+}
+
+bool UDroneInputSubsystem::is_hid_device(int32 device_id) const
+{
+	return hid_device_ids.Contains(device_id);
+}
+
+FInputDeviceId UDroneInputSubsystem::get_or_create_input_device_id(int32 device_id, bool is_hid_device)
+{
+	if (!is_hid_device) {
+		return FInputDeviceId::CreateFromInternalId(device_id);
+	}
+
+	if (const FInputDeviceId* existing_id = device_input_ids.Find(device_id)) {
+		return *existing_id;
+	}
+
+	FInputDeviceId input_device_id =
+		IPlatformInputDeviceMapper::Get().AllocateNewInputDeviceId();
+
+	FPlatformUserId platform_user_id = PLATFORMUSERID_NONE;
+	if (const FPlatformUserId* cached_user = device_platform_users.Find(device_id)) {
+		platform_user_id = *cached_user;
+	}
+
+	if (!platform_user_id.IsValid()) {
+		platform_user_id = IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser();
+	}
+
+	device_input_ids.Add(device_id, input_device_id);
+	device_platform_users.Add(device_id, platform_user_id);
+
+	IPlatformInputDeviceMapper::Get().Internal_MapInputDeviceToUser(
+		input_device_id, platform_user_id, EInputDeviceConnectionState::Connected);
+
+	return input_device_id;
 }

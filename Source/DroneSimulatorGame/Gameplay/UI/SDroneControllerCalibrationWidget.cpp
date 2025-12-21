@@ -1,14 +1,209 @@
 #include "SDroneControllerCalibrationWidget.h"
 
 #include "DroneSimulatorGame/Gameplay/DronePlayerController.h"
+#include "DroneSimulatorInput/Public/DroneInputLocalPlayerSubsystem.h"
 #include "DroneSimulatorInput/Public/DroneInputSubsystem.h"
 #include "DroneSimulatorInput/Public/DroneInputCalibrator.h"
+#include "Engine/Engine.h"
+#include "Engine/LocalPlayer.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Input/SCheckBox.h"
+#include "Widgets/Input/SEditableTextBox.h"
+#include "Widgets/Input/STextComboBox.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Views/STableRow.h"
-#include "Kismet/GameplayStatics.h"
+
+namespace
+{
+	FString get_axis_label(EDroneInputAxis axis)
+	{
+		switch (axis)
+		{
+			case EDroneInputAxis::Throttle: return TEXT("Throttle");
+			case EDroneInputAxis::Yaw: return TEXT("Yaw");
+			case EDroneInputAxis::Pitch: return TEXT("Pitch");
+			case EDroneInputAxis::Roll: return TEXT("Roll");
+			default: break;
+		}
+
+		const int32 aux_start = static_cast<int32>(EDroneInputAxis::Aux1);
+		const int32 aux_index = static_cast<int32>(axis) - aux_start;
+		if (aux_index >= 0 && aux_index < drone_input::aux_axis_count)
+		{
+			return FString::Printf(TEXT("Aux %d"), aux_index + 1);
+		}
+
+		return TEXT("Unknown");
+	}
+
+	TArray<EDroneInputAxis> get_config_axes()
+	{
+		TArray<EDroneInputAxis> axes = {
+			EDroneInputAxis::Throttle,
+			EDroneInputAxis::Yaw,
+			EDroneInputAxis::Pitch,
+			EDroneInputAxis::Roll
+		};
+
+		for (int32 aux_index = 0; aux_index < drone_input::aux_axis_count; ++aux_index)
+		{
+			axes.Add(static_cast<EDroneInputAxis>(
+				static_cast<int32>(EDroneInputAxis::Aux1) + aux_index));
+		}
+
+		return axes;
+	}
+
+	TArray<EDroneInputAxis> get_default_channel_order()
+	{
+		return {
+			EDroneInputAxis::Roll,
+			EDroneInputAxis::Pitch,
+			EDroneInputAxis::Throttle,
+			EDroneInputAxis::Yaw
+		};
+	}
+
+	bool try_parse_channel_order(const FString& order, TArray<EDroneInputAxis>& out_axes)
+	{
+		out_axes.Reset();
+
+		for (int32 index = 0; index < order.Len(); ++index)
+		{
+			const TCHAR channel = FChar::ToUpper(order[index]);
+			EDroneInputAxis axis = EDroneInputAxis::None;
+
+			switch (channel)
+			{
+				case 'A': axis = EDroneInputAxis::Roll; break;
+				case 'E': axis = EDroneInputAxis::Pitch; break;
+				case 'T': axis = EDroneInputAxis::Throttle; break;
+				case 'R': axis = EDroneInputAxis::Yaw; break;
+				default: break;
+			}
+
+			if (axis == EDroneInputAxis::None || out_axes.Contains(axis))
+			{
+				continue;
+			}
+
+			out_axes.Add(axis);
+			if (out_axes.Num() == 4)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	TArray<EDroneInputAxis> resolve_channel_order_axes(const TSharedPtr<FString>& selected_order,
+		const FString& custom_order)
+	{
+		if (!selected_order.IsValid())
+		{
+			return get_default_channel_order();
+		}
+
+		const bool use_custom = selected_order->Equals(TEXT("Custom"));
+		const FString& order = use_custom ? custom_order : *selected_order;
+		TArray<EDroneInputAxis> axes;
+		if (try_parse_channel_order(order, axes))
+		{
+			return axes;
+		}
+
+		return get_default_channel_order();
+	}
+
+	bool is_hex_string(const FString& text)
+	{
+		if (text.IsEmpty())
+		{
+			return false;
+		}
+
+		for (int32 index = 0; index < text.Len(); ++index)
+		{
+			if (!FChar::IsHexDigit(text[index]))
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	bool try_parse_hid_axis_name(const FString& axis_name, int32& out_usage_page, int32& out_usage)
+	{
+		if (!axis_name.StartsWith(TEXT("HID_")))
+		{
+			return false;
+		}
+
+		const FString trimmed = axis_name.Mid(4);
+		const int32 separator_index = trimmed.Find(TEXT("_"));
+		if (separator_index == INDEX_NONE)
+		{
+			return false;
+		}
+
+		const FString page_text = trimmed.Left(separator_index);
+		const FString usage_text = trimmed.Mid(separator_index + 1);
+		if (!is_hex_string(page_text) || !is_hex_string(usage_text))
+		{
+			return false;
+		}
+
+		out_usage_page = FParse::HexNumber(*page_text);
+		out_usage = FParse::HexNumber(*usage_text);
+		return true;
+	}
+
+	TArray<FName> get_sorted_axis_names(const FDroneInputDevice& device)
+	{
+		TArray<FName> axis_names = device.axis_names;
+		if (axis_names.Num() == 0)
+		{
+			device.raw_axes.GetKeys(axis_names);
+		}
+
+		axis_names.Sort([](const FName& left, const FName& right)
+		{
+			int32 left_page = 0;
+			int32 left_usage = 0;
+			int32 right_page = 0;
+			int32 right_usage = 0;
+
+			const FString left_name = left.ToString();
+			const FString right_name = right.ToString();
+
+			const bool left_hid = try_parse_hid_axis_name(left_name, left_page, left_usage);
+			const bool right_hid = try_parse_hid_axis_name(right_name, right_page, right_usage);
+
+			if (left_hid && right_hid)
+			{
+				if (left_page != right_page)
+				{
+					return left_page < right_page;
+				}
+				if (left_usage != right_usage)
+				{
+					return left_usage < right_usage;
+				}
+			}
+			else if (left_hid != right_hid)
+			{
+				return left_hid;
+			}
+
+			return left_name < right_name;
+		});
+
+		return axis_names;
+	}
+}
 
 // ============================================================================
 // Component: Device Selection List
@@ -134,20 +329,25 @@ public:
         input_subsystem = InArgs._InputSubsystem;
         is_calibrating = InArgs._IsCalibrating;
 
-        ChildSlot
-        [
-            SNew(SVerticalBox)
+        TSharedRef<SVerticalBox> axis_list = SNew(SVerticalBox)
             .Visibility_Lambda([this]()
             {
                 if (is_calibrating.Get()) return EVisibility::Collapsed;
                 if (selected_device.Get() == -1) return EVisibility::Collapsed;
                 if (input_subsystem && !input_subsystem->is_device_calibrated(selected_device.Get())) return EVisibility::Collapsed;
                 return EVisibility::Visible;
-            })
-            + SVerticalBox::Slot().AutoHeight()[ make_axis_row(EDroneInputAxis::Throttle, "Throttle") ]
-            + SVerticalBox::Slot().AutoHeight()[ make_axis_row(EDroneInputAxis::Yaw, "Yaw") ]
-            + SVerticalBox::Slot().AutoHeight()[ make_axis_row(EDroneInputAxis::Pitch, "Pitch") ]
-            + SVerticalBox::Slot().AutoHeight()[ make_axis_row(EDroneInputAxis::Roll, "Roll") ]
+            });
+
+        for (EDroneInputAxis axis : get_config_axes())
+        {
+            axis_list->AddSlot()
+                .AutoHeight()
+                [ make_axis_row(axis, get_axis_label(axis)) ];
+        }
+
+        ChildSlot
+        [
+            axis_list
         ];
     }
 
@@ -319,16 +519,40 @@ void SDroneControllerCalibrationWidget::Construct(const FArguments& InArgs)
 {
     this->drone_player_controller = InArgs._drone_player_controller;
 
-    UGameInstance* game_instance = UGameplayStatics::GetGameInstance(GWorld);
-    if (game_instance)
+    if (GEngine)
     {
-        this->input_subsystem = game_instance->GetSubsystem<UDroneInputSubsystem>();
+        this->input_subsystem = GEngine->GetEngineSubsystem<UDroneInputSubsystem>();
+    }
+
+    if (this->drone_player_controller != nullptr)
+    {
+        if (ULocalPlayer* local_player = this->drone_player_controller->GetLocalPlayer())
+        {
+            this->local_player_subsystem = local_player->GetSubsystem<UDroneInputLocalPlayerSubsystem>();
+        }
     }
 
     if (this->input_subsystem.IsValid())
     {
         this->calibrator = this->input_subsystem->get_calibrator();
         this->input_subsystem->on_axis_mapped_native.AddSP(this, &SDroneControllerCalibrationWidget::on_axis_mapped);
+    }
+
+    if (channel_order_options.Num() == 0)
+    {
+        channel_order_options = {
+            MakeShared<FString>(TEXT("AETR")),
+            MakeShared<FString>(TEXT("TAER")),
+            MakeShared<FString>(TEXT("ETAR")),
+            MakeShared<FString>(TEXT("AERT")),
+            MakeShared<FString>(TEXT("ATRE")),
+            MakeShared<FString>(TEXT("TARE")),
+            MakeShared<FString>(TEXT("RETA")),
+            MakeShared<FString>(TEXT("RTAE")),
+            MakeShared<FString>(TEXT("REAT")),
+            MakeShared<FString>(TEXT("Custom"))
+        };
+        selected_channel_order = channel_order_options[0];
     }
 
     ChildSlot
@@ -381,6 +605,55 @@ void SDroneControllerCalibrationWidget::Construct(const FArguments& InArgs)
                     .SelectedDeviceId_Lambda([this]() { return selected_device_id; })
                     .InputSubsystem(this->input_subsystem.Get())
                     .IsCalibrating(this, &SDroneControllerCalibrationWidget::is_calibrating_attr)
+                ]
+
+                + SVerticalBox::Slot()
+                .AutoHeight()
+                .Padding(0, 10)
+                [
+                    SNew(SHorizontalBox)
+                    + SHorizontalBox::Slot()
+                    .AutoWidth()
+                    .VAlign(VAlign_Center)
+                    [
+                        SNew(STextBlock).Text(FText::FromString("Channel order"))
+                    ]
+                    + SHorizontalBox::Slot()
+                    .AutoWidth()
+                    .Padding(10, 0, 0, 0)
+                    [
+                        SNew(STextComboBox)
+                        .OptionsSource(&channel_order_options)
+                        .InitiallySelectedItem(selected_channel_order)
+                        .OnSelectionChanged_Lambda([this](TSharedPtr<FString> new_selection, ESelectInfo::Type)
+                        {
+                            selected_channel_order = new_selection;
+                        })
+                        .IsEnabled_Lambda([this]()
+                        {
+                            return !is_calibrating;
+                        })
+                    ]
+                    + SHorizontalBox::Slot()
+                    .AutoWidth()
+                    .Padding(10, 0, 0, 0)
+                    [
+                        SNew(SEditableTextBox)
+                        .MinDesiredWidth(70.f)
+                        .Text_Lambda([this]()
+                        {
+                            return FText::FromString(custom_channel_order);
+                        })
+                        .OnTextChanged_Lambda([this](const FText& new_text)
+                        {
+                            custom_channel_order = new_text.ToString().ToUpper();
+                        })
+                        .IsEnabled_Lambda([this]()
+                        {
+                            return !is_calibrating && selected_channel_order.IsValid()
+                                && selected_channel_order->Equals(TEXT("Custom"));
+                        })
+                    ]
                 ]
 
                 // Interaction Component (Instructions + Buttons)
@@ -473,6 +746,10 @@ void SDroneControllerCalibrationWidget::on_device_selected(TSharedPtr<FDroneInpu
     {
         selected_device_id = device->device_id;
         is_calibration_success = false;
+        if (local_player_subsystem.IsValid())
+        {
+            local_player_subsystem->assign_device_to_local_player(selected_device_id);
+        }
     }
 }
 
@@ -482,10 +759,16 @@ FReply SDroneControllerCalibrationWidget::on_start_calibration_clicked()
     {
         if (TSharedPtr<FDroneInputCalibrator> calibrator_ptr = calibrator.Pin())
         {
+            if (local_player_subsystem.IsValid())
+            {
+                local_player_subsystem->assign_device_to_local_player(selected_device_id);
+            }
             is_calibrating = true;
             current_axis_index = 0;
             is_measuring_limits = false;
             is_calibration_success = false;
+            mapped_device_axes.Empty();
+            axes_to_map = resolve_channel_order_axes(selected_channel_order, custom_channel_order);
             calibrator_ptr->start_calibration(selected_device_id);
 
             // Start Mapping Phase
@@ -500,6 +783,7 @@ FReply SDroneControllerCalibrationWidget::on_start_calibration_clicked()
 
 void SDroneControllerCalibrationWidget::on_axis_mapped(EDroneInputAxis game_axis, FName device_axis_name)
 {
+    mapped_device_axes.Add(device_axis_name);
     this->current_axis_index++;
     if (this->current_axis_index < axes_to_map.Num())
     {
@@ -511,6 +795,41 @@ void SDroneControllerCalibrationWidget::on_axis_mapped(EDroneInputAxis game_axis
     else
     {
         this->is_measuring_limits = false;
+        auto_map_aux_channels();
+    }
+}
+
+void SDroneControllerCalibrationWidget::auto_map_aux_channels()
+{
+    if (!input_subsystem.IsValid() || selected_device_id == -1)
+    {
+        return;
+    }
+
+    const FDroneInputDevice device = input_subsystem->get_device(selected_device_id);
+    if (device.device_id == -1)
+    {
+        return;
+    }
+
+    const TArray<FName> axis_names = get_sorted_axis_names(device);
+    const int32 base_axis_count = 4;
+    for (int32 axis_index = base_axis_count; axis_index < axis_names.Num(); ++axis_index)
+    {
+        const int32 aux_index = axis_index - base_axis_count;
+        if (aux_index >= drone_input::aux_axis_count)
+        {
+            break;
+        }
+
+        const FName axis_name = axis_names[axis_index];
+        if (mapped_device_axes.Contains(axis_name))
+        {
+            continue;
+        }
+
+        input_subsystem->set_axis_mapping(selected_device_id, axis_name,
+            static_cast<EDroneInputAxis>(static_cast<int32>(EDroneInputAxis::Aux1) + aux_index));
     }
 }
 
@@ -590,20 +909,12 @@ FText SDroneControllerCalibrationWidget::get_instruction_text() const
     {
         if (current_axis_index < axes_to_map.Num())
         {
-            FString axis_name;
-            switch (axes_to_map[current_axis_index])
-            {
-                case EDroneInputAxis::Throttle: axis_name = "Throttle"; break;
-                case EDroneInputAxis::Yaw: axis_name = "Yaw"; break;
-                case EDroneInputAxis::Pitch: axis_name = "Pitch"; break;
-                case EDroneInputAxis::Roll: axis_name = "Roll"; break;
-                default: axis_name = "Unknown"; break;
-            }
+            const FString axis_name = get_axis_label(axes_to_map[current_axis_index]);
             return FText::FromString(FString::Printf(TEXT("Move stick for: %s"), *axis_name));
         }
         else
         {
-            return FText::FromString("Mapping Complete! Center yaw/pitch/roll, set throttle to minimum, then click Next to record min/max ranges.");
+            return FText::FromString("Mapping complete. Aux channels are auto-mapped to channels 5+. Center yaw/pitch/roll, set throttle to minimum, then click Next to record min/max ranges.");
         }
     }
 }

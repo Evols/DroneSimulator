@@ -9,7 +9,7 @@ public class DroneSimulatorInput : ModuleRules
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "PhysicsCore" });
 
 
-		PrivateDependencyModuleNames.AddRange(new string[] { "InputDevice", "DeveloperSettings", "Json", "JsonUtilities" });
+		PrivateDependencyModuleNames.AddRange(new string[] { "ApplicationCore", "InputDevice", "DeveloperSettings", "Json", "JsonUtilities" });
 
 		// Uncomment if you are using Slate UI
 		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

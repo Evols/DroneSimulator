@@ -193,7 +193,8 @@ void FHIDInputManager::poll_devices(UDroneInputSubsystem *input_subsystem) {
 			if (input_subsystem) {
 				input_subsystem->register_device(device_data.device_id,
 																				 device_data.device_name,
-																				 device_data.device_uid);
+																				 device_data.device_uid,
+																				 true);
 
 				// Forward to Manager
 				// Axes

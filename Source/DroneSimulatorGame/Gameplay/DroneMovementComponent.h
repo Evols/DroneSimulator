@@ -151,8 +151,6 @@ private:
 	UFUNCTION()
 	void ensure_default_flight_mode();
 
-	FDronePlayerInput read_player_input(const UFlightModeBase* active_mode);
-
 	FFlightModeState build_flight_mode_state(float delta_time) const;
 
 private:

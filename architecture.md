@@ -134,12 +134,15 @@ This module encapsulates device handling and maps physical inputs to logical dro
 
 Key types:
 
-- `UDroneInputSubsystem` – a `UGameInstanceSubsystem` and `FTickableGameObject` that:
+- `UDroneInputSubsystem` – a `UEngineSubsystem` and `FTickableGameObject` that:
   - Registers input devices and maintains their state.
   - Maps device‑specific axis names to logical axes such as throttle/roll/pitch/yaw.
   - Stores calibration data per device and axis.
-  - Provides Blueprint‑callable getters for raw and calibrated values.
+  - Provides Blueprint-callable getters for raw values and calibration state.
 
+- `UDroneInputLocalPlayerSubsystem` - a `ULocalPlayerSubsystem` that:
+  - Holds per-player precision/throttle configuration.
+  - Dispatches calibrated axes into Unreal input for the owning local player.
 - `FDroneInputProcessor` – processes raw events and forwards them to `UDroneInputSubsystem`.
 - `FHIDInputManager` and `FHIDDevice` (in `Private/Windows`) – low‑level HID polling and enumeration.
 - `FDroneInputCalibrator` / `FDroneInputProfileManager` – helpers for calibration flows and saving/loading profiles.
@@ -149,8 +152,9 @@ Typical flow:
 
 1. The HID manager discovers devices and reports raw axis/button events.
 2. `FDroneInputProcessor` normalizes events and calls into `UDroneInputSubsystem` APIs like `handle_raw_analog_input`.
-3. `UDroneInputSubsystem` applies mappings and calibration, producing logical axis values.
-4. Game code builds `FDronePlayerInput` from the subsystem and passes it to the active flight mode.
+3. `UDroneInputSubsystem` applies mappings and calibration, storing per-device axis state.
+4. `UDroneInputLocalPlayerSubsystem` injects calibrated axes into Unreal input for each local player.
+5. Game code builds `FDronePlayerInput` from Enhanced Input and passes it to the active flight mode.
 
 ---
 
@@ -206,7 +210,9 @@ Putting it all together, a typical simulation step looks like:
 
 1. **Input**
    - HID devices report events to `UDroneInputSubsystem`.
-   - The subsystem updates calibrated logical axes.
+   - The device subsystem stores calibrated axis state per device.
+   - `UDroneInputLocalPlayerSubsystem` dispatches input for each local player.
+   - Enhanced Input receives calibrated logical axes.
 
 2. **Flight mode**
    - `UDroneMovementComponent` reads `FDronePlayerInput`.
