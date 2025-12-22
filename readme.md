@@ -1,43 +1,45 @@
-# Drone Simulator SDK for Unreal Engine 🚁
+# Drone Simulator SDK for Unreal Engine
 
 A physics-first SDK for simulating multirotor drones inside Unreal Engine.
 Use it as a reusable C++/Blueprint toolkit to build your own simulators, tools, and games.
 
 > This plugin is designed to live inside your Unreal project as an engine- and editor-first SDK, not as a ready-made arcade drone game.
 
-## What is it? 🧩
+## Features
 
-Drone Simulator is a set of Unreal Engine modules that provide:
-
-- A high-frequency physics pipeline for multirotor drones.
-- Configurable data assets for frames, motors, propellers, batteries and airfoils.
-- A modular control stack (flight modes + controllers) that you can swap or extend.
-- Input and calibration support for typical RC transmitters and other HID devices.
-- Editor tooling for authoring airfoil data and inspecting flight logs.
+- 🔨**Modular drone parts**: pick your own frame, battery, propellers, and motors, using assets.
+- 🚁 Simulate **high-fidely physics (BEMT)** or **arcade physics**.
+- 🕹️ A **PID controller** that can be tuned.
+- 🚀 **High-frequency physics** pipeline for multirotor drones.
+- 🛸 Multiple flight modes: **race/freestyle** or **stabilized**
+- 🏗️ Built for **extensibility**: flight modes, physics models and controllers are classes, that you can swap or extend.
+- 🎮 **Input and calibration** support for drone RC transmitters (EdgeTX, DJI) and other HID devices.
+- 👩‍💻 **Editor tooling** for authoring airfoil data and inspecting flight logs.
 
 You drop the plugin into an existing Unreal project and compose the pieces you need.
 
-## Why use it? 💡
+## Architecture
 
-- **Serious physics when you need it** – models for frame, motor, propeller, battery and airfoil data, including a BEMT-based rotor model for higher-fidelity setups.
-- **Small and hackable** – all features are exposed as Unreal-friendly components, assets, subsystems, and editor tools that you can subclass or wire up in Blueprints.
-- **Engine-first workflow** – optimized for people who live in the Unreal Editor, iterating on layouts, physics and tooling rather than shipping a fixed game.
-- **Debuggable by design** – exposes detailed internal state (forces, torques, velocities, angles of attack, etc.) so you can understand why a drone behaves the way it does.
-- **Editor integration** – custom asset types, importers and timeline tools for analyzing airfoil data and recorded flights.
-- **Input-friendly** – centralised input subsystem with device discovery, axis mapping and calibration.
+This project consists in multiple parts:
+- `Content` contains demo Blueprints implementation and built-in drone parts.
+- `aero_table` consists in Python scripts to build the airfoil lift and drag tables using Xfoil.
+- `Source` contains the C++ source code modules:
+  - `DroneSimulatorCore` is the simulator itself, it mainly include the physics core
+  - `DroneSimulatorInput` allows the support of non-standard gamepads, such as EdgeTX and DJI
+  - `DroneSimulatorGame` wraps the physics core with Unreal Engine classes, to make it available as Pawn, MovementComponent, assets, etc
+  - `DroneSimulatorEditor` provides editor utilities, such as session replay, and asset editor
 
-## Who is it for? 🎯
+## Who is it for?
 
 - Game developers who want believable drones without writing all the physics from scratch.
 - Researchers and engineers building training tools, evaluation environments or hardware-in-the-loop setups.
 - Robotics and autonomy teams needing a controllable virtual drone embedded in Unreal.
 - Educators who want to demonstrate multirotor dynamics in an interactive 3D environment.
 
-## What can you build? 🏗️
+## What can you build?
 
 Typical use cases include:
 
-- Internal simulators for tuning frames, propellers and motors.
 - Evaluation environments for flight modes and control algorithms.
 - Editor tools and dashboards for visualizing flight logs and telemetry.
 - Educational playgrounds for learning multirotor dynamics.
@@ -49,9 +51,6 @@ Typical use cases include:
 - Clone this repository into your project's `Plugins/` folder, e.g. `YourProject/Plugins/DroneSimulator/`.
 - Open the project in Unreal and enable:
   - `Drone Simulator`
-  - `Drone Simulator Input`
-  - `Drone Simulator Editor`
-  - plus the built-in `Enhanced Input` plugin.
 - Restart the editor if prompted.
 
 2. **Spawn a drone**
@@ -66,10 +65,11 @@ Typical use cases include:
 
 From here you can start flying in PIE and iterate on your setup.
 
-## License 📜
+## License
 
 This project is distributed under the GPL v3 license. For inquiries about alternative licensing options, please reach out to me at hutteau.b@gmail.com .
-## Learn more 📚
+
+## Learn more
 
 - For a deeper look at the modules and data flow, see [architecture.md](architecture.md).
 - For notes about referenced brands and models, see [disclaimer.md](disclaimer.md).
