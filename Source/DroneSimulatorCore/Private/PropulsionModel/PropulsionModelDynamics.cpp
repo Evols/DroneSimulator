@@ -28,14 +28,24 @@ TOptional<FDynamicsPropellerSetInfo> UPropulsionModelDynamics::tick_propulsion(d
     const auto rear_left_throttle = propeller_set_throttle.rear_left;
     const auto rear_right_throttle = propeller_set_throttle.rear_right;
 
+    // Extents are distances; normalize signs so front is +X and back is -X. In unreal units
+    const FVector props_extent_front = frame->props_extent_front.GetAbs();
+    const FVector props_extent_back = frame->props_extent_back.GetAbs();
+
+	// In unreal units
+    const FVector front_left_location(props_extent_front.X, -props_extent_front.Y, props_extent_front.Z);
+    const FVector front_right_location(props_extent_front.X, props_extent_front.Y, props_extent_front.Z);
+    const FVector rear_left_location(-props_extent_back.X, -props_extent_back.Y, props_extent_back.Z);
+    const FVector rear_right_location(-props_extent_back.X, props_extent_back.Y, props_extent_back.Z);
+
     const auto result_front_left = rotor_model->simulate_propeller_rotor(substep_body, front_left_throttle, propeller,
-        motor, battery, frame->props_extent_front * FVector(1.0, -1.0, 1.0), true, simulation_world);
+        motor, battery, front_left_location, true, simulation_world);
     const auto result_front_right = rotor_model->simulate_propeller_rotor(substep_body, front_right_throttle, propeller,
-        motor, battery, frame->props_extent_front * FVector(1.0, 1.0, 1.0), false, simulation_world);
+        motor, battery, front_right_location, false, simulation_world);
     const auto result_rear_left = rotor_model->simulate_propeller_rotor(substep_body, rear_left_throttle, propeller,
-        motor, battery, frame->props_extent_back * FVector(1.0, -1.0, 1.0), false, simulation_world);
+        motor, battery, rear_left_location, false, simulation_world);
     const auto result_rear_right = rotor_model->simulate_propeller_rotor(substep_body, rear_right_throttle, propeller,
-        motor, battery, frame->props_extent_back * FVector(1.0, 1.0, 1.0), true, simulation_world);
+        motor, battery, rear_right_location, true, simulation_world);
 
     TOptional<FDynamicsPropellerSetInfo> return_data = {};
     if (result_front_left.additional_data.IsSet() && result_front_right.additional_data.IsSet()
