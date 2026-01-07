@@ -21,7 +21,7 @@ struct FFlightRecordPawnEvent
 public:
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	double event_time;
+	double event_time = 0.0;
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	FFlightRecordEventData event_tata;

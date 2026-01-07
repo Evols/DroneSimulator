@@ -111,15 +111,15 @@ public:
 
 	// In meters
 	UPROPERTY()
-	double blade_diameter;
+	double blade_diameter = 0.0;
 
 	// Thrust coefficient, dimensionless
 	UPROPERTY()
-	double thrust_coefficient;
+	double thrust_coefficient = 0.0;
 
 	// Torque coefficient, dimensionless
 	UPROPERTY()
-	double torque_coefficient;
+	double torque_coefficient = 0.0;
 };
 
 using TDronePropeller = TVariant<FDronePropellerBemt, FDronePropellerSimplified>;

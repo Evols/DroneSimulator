@@ -11,19 +11,19 @@ struct DRONESIMULATORGAME_API FAngleOfAttackXfoilData {
 
   UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Drone simulator",
             meta = (DisplayName = "Angle of attack (in degrees)"))
-  float angle_of_attack;
+  float angle_of_attack = 0.f;
 
   UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Drone simulator",
             meta = (DisplayName = "Lift coefficient"))
-  float lift_coefficient;
+  float lift_coefficient = 0.f;
 
   UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Drone simulator",
             meta = (DisplayName = "Drag coefficient"))
-  float drag_coefficient;
+  float drag_coefficient = 0.f;
 
   UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Drone simulator",
             meta = (DisplayName = "Moment coefficient"))
-  float moment_coefficient = 0.0f;
+  float moment_coefficient = 0.f;
 };
 
 USTRUCT(BlueprintType)
@@ -32,7 +32,7 @@ struct DRONESIMULATORGAME_API FReynoldsXfoilData {
 
   UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Drone simulator",
             meta = (DisplayName = "Reynolds number"))
-  float reynolds_number;
+  float reynolds_number = 0.0f;
 
   UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Drone simulator",
             meta = (DisplayName = "Xfoil data per angle of attack"))

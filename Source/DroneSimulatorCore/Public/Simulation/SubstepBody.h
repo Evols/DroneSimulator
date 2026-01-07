@@ -18,36 +18,36 @@ public:
 
     // Mass in kg
     UPROPERTY()
-    double mass;
+    double mass = 0.0;
 
     // In kg·m^2, in local space.
     // These are the diagonal coefficients of the matrix, because in local space the matrix is diagonal
     UPROPERTY()
-    FVector inertia_tensor;
+    FVector inertia_tensor = FVector::ZeroVector;
 
 // These properties are updated at the end of each substep, but should not be updated during the substep.
 public:
 
     // In m/s
     UPROPERTY()
-    FVector linear_velocity_world;
+    FVector linear_velocity_world = FVector::ZeroVector;
 
     // Angular velocity, as a rotation vector:
     // - the direction of this vector is its axis of rotation
     // - its magnitude is the rotation speed in rad/s
     UPROPERTY()
-    FVector angular_velocity_radians_world;
+    FVector angular_velocity_radians_world = FVector::ZeroVector;
 
 // These properties are accumulated during the substep.
 public:
 
     // In N (kg·m/s^2)
     UPROPERTY()
-    FVector accumulated_force_world;
+    FVector accumulated_force_world = FVector::ZeroVector;
 
     // In N·m·rad (rad·kg·m^2/s^2), as a rotation vector
     UPROPERTY()
-    FVector accumulated_torque_world;
+    FVector accumulated_torque_world = FVector::ZeroVector;
 
 public:
     /**

@@ -16,19 +16,19 @@ public:
 
 	// In Unreal units
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	FVector location;
+	FVector location = FVector::ZeroVector;
 
 	// In unreal units
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	FRotator rotation;
+	FRotator rotation = FRotator::ZeroRotator;
 
 	// In m/s
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	FVector velocity;
+	FVector velocity = FVector::ZeroVector;
 
 	// In rad/s
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	FVector angular_velocity;
+	FVector angular_velocity = FVector::ZeroVector;
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	FDronePlayerInput controller_input;
