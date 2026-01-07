@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "Structural.h"
+#include "DroneSimulatorCore/Public/Simulation/Structural.h"
 
 struct FDronePropellerBemt;
 struct FSubstepBody;
