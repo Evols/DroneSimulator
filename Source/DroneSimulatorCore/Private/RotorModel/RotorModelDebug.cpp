@@ -11,8 +11,9 @@ FRotorSimulationResult URotorModelDebug::simulate_propeller_rotor(FSubstepBody* 
 	const TDronePropeller* propeller, const FDroneMotor* motor, const FDroneBattery* battery,
 	const FVector& propeller_location_local, bool is_clockwise, const USimulationWorld* simulation_world)
 {
-	const double thrust = this->max_thrust * throttle;
-	double torque = this->max_torque * throttle;
+	const double throttle_clamped = FMath::Clamp(throttle, 0.0, 1.0);
+	const double thrust = this->max_thrust * throttle_clamped;
+	double torque = this->max_torque * throttle_clamped;
 
 	// World-space prop axis (unit)
 	const FVector thrust_axis = substep_body->transform_world.TransformVectorNoScale(FVector::UpVector).GetSafeNormal();
