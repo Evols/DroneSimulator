@@ -82,7 +82,7 @@ void UDroneMovementComponent::set_updated_component_inertia()
 		return;
 	}
 
-	const auto inertia = inertia::compute_inertia_uu(this->frame, this->motor, this->propeller, this->battery);
+	const auto inertia = inertia::compute_inertia_uu(this->frame, this->motor, this->battery);
 
 	auto physics_handle = primitive_component->GetBodyInstance()->GetPhysicsActorHandle();
 	FPhysicsCommand::ExecuteWrite(physics_handle, [inertia](auto handle)
