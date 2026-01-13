@@ -34,11 +34,12 @@ def run_xfoil(generator: XFoilFileGenerator, reynolds_number: float, aoa_stepper
         if sys.platform == "win32":
             # Run in a new process group so we can kill all children if needed
             xfoil_command = "xfoil"
+
             proc = subprocess.Popen(
-                ["cmd", "/c", f"{xfoil_command} < {input_file_path}"],
+                f'"{xfoil_command}" < "{input_file_path}"',
                 shell=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
                 cwd=temp_folder,
                 creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
             )
@@ -48,14 +49,14 @@ def run_xfoil(generator: XFoilFileGenerator, reynolds_number: float, aoa_stepper
             proc = subprocess.Popen(
                 f"{xfoil_command} < {input_file_path}",
                 shell=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
                 cwd=temp_folder,
                 preexec_fn=os.setsid,
             )
 
         # Wait for completion with timeout
-        proc.wait(timeout=timeout)
+        stdout, stderr = proc.communicate(timeout=timeout)
 
     except subprocess.TimeoutExpired as e:
         print(f"Xfoil timed out: {type(e).__name__}")
@@ -78,6 +79,10 @@ def run_xfoil(generator: XFoilFileGenerator, reynolds_number: float, aoa_stepper
     # Check if the pol file was created
     if not os.path.isfile(pol_file_path):
         print(f"Pol file was not created: {pol_file_path}")
+        if stdout:
+            print(f"STDOUT:\n{stdout.decode(errors='replace')}")
+        if stderr:
+            print(f"STDERR:\n{stderr.decode(errors='replace')}")
         return None
 
     # Parse and validate the pol file
