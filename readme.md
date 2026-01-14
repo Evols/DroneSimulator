@@ -3,6 +3,8 @@
 A physics-first SDK for simulating multirotor drones inside Unreal Engine.
 Use it as a reusable C++/Blueprint toolkit to build your own simulators, tools, and games.
 
+[![Video thumbnail](https://img.youtube.com/vi/dUYznzV4oDA/0.jpg)](https://www.youtube.com/watch?v=dUYznzV4oDA)
+
 > This plugin is designed to live inside your Unreal project as an engine- and editor-first SDK, not as a ready-made arcade drone game.
 
 ## Features
