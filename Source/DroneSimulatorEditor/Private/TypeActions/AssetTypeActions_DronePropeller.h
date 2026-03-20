@@ -2,7 +2,7 @@
 
 #include "AssetTypeActions_Base.h"
 
-class FAssetTypeActions_DronePropellerBemt : public FAssetTypeActions_Base
+class FAssetTypeActions_DronePropeller : public FAssetTypeActions_Base
 {
 public:
 	virtual FText GetName() const override;
@@ -10,13 +10,3 @@ public:
 	virtual UClass* GetSupportedClass() const override;
 	virtual uint32 GetCategories() override;
 };
-
-class FAssetTypeActions_DronePropellerSimplified : public FAssetTypeActions_Base
-{
-public:
-	virtual FText GetName() const override;
-	virtual FColor GetTypeColor() const override;
-	virtual UClass* GetSupportedClass() const override;
-	virtual uint32 GetCategories() override;
-};
-

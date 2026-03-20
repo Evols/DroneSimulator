@@ -3,44 +3,23 @@
 
 #define LOCTEXT_NAMESPACE "AssetTypeActions"
 
-FText FAssetTypeActions_DronePropellerBemt::GetName() const
+FText FAssetTypeActions_DronePropeller::GetName() const
 {
-	return LOCTEXT("FDronePropellerBemtAssetName", "Propeller (BEMT)");
+	return LOCTEXT("FDronePropellerAssetName", "Propeller");
 }
 
-FColor FAssetTypeActions_DronePropellerBemt::GetTypeColor() const
+FColor FAssetTypeActions_DronePropeller::GetTypeColor() const
 {
 	// oklch(0.6529 0.1623 6.804)
 	return FColor::FromHex("df5e7f");
 }
 
-UClass* FAssetTypeActions_DronePropellerBemt::GetSupportedClass() const
+UClass* FAssetTypeActions_DronePropeller::GetSupportedClass() const
 {
-	return UDronePropellerBemtAsset::StaticClass();
+	return UDronePropellerAsset::StaticClass();
 }
 
-uint32 FAssetTypeActions_DronePropellerBemt::GetCategories()
-{
-	return EAssetTypeCategories::Misc;
-}
-
-FText FAssetTypeActions_DronePropellerSimplified::GetName() const
-{
-	return LOCTEXT("FDronePropellerSimplifiedAssetName", "Propeller (Simplified)");
-}
-
-FColor FAssetTypeActions_DronePropellerSimplified::GetTypeColor() const
-{
-	// oklch(0.827 0.078 6.804)
-	return FColor::FromHex("f3b2be");
-}
-
-UClass* FAssetTypeActions_DronePropellerSimplified::GetSupportedClass() const
-{
-	return UDronePropellerSimplifiedAsset::StaticClass();
-}
-
-uint32 FAssetTypeActions_DronePropellerSimplified::GetCategories()
+uint32 FAssetTypeActions_DronePropeller::GetCategories()
 {
 	return EAssetTypeCategories::Misc;
 }

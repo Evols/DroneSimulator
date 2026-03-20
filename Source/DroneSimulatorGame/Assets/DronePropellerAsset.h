@@ -7,14 +7,17 @@
 
 class UDroneAirfoilAssetBase;
 
-UCLASS(BlueprintType)
-class DRONESIMULATORGAME_API UDronePropellerAsset : public UPrimaryDataAsset
+UCLASS(Abstract, BlueprintType, DefaultToInstanced, EditInlineNew)
+class DRONESIMULATORGAME_API UDronePropellerBaseSubAsset : public UObject
 {
 	GENERATED_BODY()
+
+public:
+
 };
 
-UCLASS(BlueprintType)
-class DRONESIMULATORGAME_API UDronePropellerBemtAsset : public UDronePropellerAsset
+UCLASS(BlueprintType, DefaultToInstanced, EditInlineNew, AutoExpandCategories=("Drone Simulator"))
+class DRONESIMULATORGAME_API UDronePropellerBemtSubAsset : public UDronePropellerBaseSubAsset
 {
 	GENERATED_BODY()
 
@@ -44,8 +47,8 @@ public:
 	UDroneAirfoilAssetBase* airfoil = nullptr;
 };
 
-UCLASS(BlueprintType)
-class DRONESIMULATORGAME_API UDronePropellerSimplifiedAsset : public UDronePropellerAsset
+UCLASS(BlueprintType, DefaultToInstanced, EditInlineNew, AutoExpandCategories=("Drone Simulator"))
+class DRONESIMULATORGAME_API UDronePropellerSimplifiedSubAsset : public UDronePropellerBaseSubAsset
 {
 	GENERATED_BODY()
 
@@ -60,4 +63,16 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Drone simulator", meta=(ClampMin="0.005", ClampMax="0.03", DisplayName="Torque coefficient (dimensionless)"))
 	double torque_coefficient = 0.015;
+};
+
+UCLASS(BlueprintType)
+class DRONESIMULATORGAME_API UDronePropellerAsset : public UPrimaryDataAsset
+{
+	GENERATED_BODY()
+
+public:
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Drone simulator", meta=(DisplayName="Model-dependant properties"))
+	TArray<UDronePropellerBaseSubAsset*> sub_assets;
+
 };

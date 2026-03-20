@@ -12,45 +12,10 @@
 
 TOptional<TDronePropeller> conversion::convert_propeller_asset(const UDronePropellerAsset* asset)
 {
-	const auto* asset_bemt = Cast<UDronePropellerBemtAsset>(asset);
-	if (asset_bemt && asset_bemt->airfoil != nullptr)
-	{
-		return { TDronePropeller(TInPlaceType<FDronePropellerBemt>{}, convert_propeller_bemt_asset(asset_bemt)) };
-	}
-
-	if (const auto* asset_simplified = Cast<UDronePropellerSimplifiedAsset>(asset))
-	{
-		return { TDronePropeller(TInPlaceType<FDronePropellerSimplified>{}, convert_propeller_simplified_asset(asset_simplified)) };
-	}
-
 	return {};
 }
 
 constexpr double inch_to_meters = 0.0254;
-
-FDronePropellerBemt conversion::convert_propeller_bemt_asset(const UDronePropellerBemtAsset* asset)
-{
-	FDronePropellerBemt result;
-
-	result.num_blades = asset->num_blades;
-
-	// Convert units to SI (meters, radians)
-	result.radius = asset->diameter_inch * inch_to_meters * 0.5; // inches to meters, diameter to radius
-	result.hub_radius = asset->hub_radius_cm * 0.01; // cm to m
-	result.chord = asset->chord_cm * 0.01; // cm to m
-
-	result.pitch = asset->pitch_inch * inch_to_meters;
-
-	result.airfoil = conversion::convert_airfoil_asset(asset->airfoil);
-
-	return result;
-}
-
-FDronePropellerSimplified conversion::convert_propeller_simplified_asset(const UDronePropellerSimplifiedAsset* asset)
-{
-	const auto diameter_meters = asset->diameter_inch * inch_to_meters;
-	return FDronePropellerSimplified(diameter_meters, asset->thrust_coefficient, asset->torque_coefficient);
-}
 
 FDroneAirfoilTable convert_airfoil_asset_table(const UDroneAirfoilAssetTable* asset)
 {

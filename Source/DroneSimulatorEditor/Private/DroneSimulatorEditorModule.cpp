@@ -65,13 +65,9 @@ void FDroneSimulatorEditorModule::register_asset_tools()
 	FAssetToolsModule& asset_tools_module = FAssetToolsModule::GetModule();
 	IAssetTools& asset_tools = asset_tools_module.Get();
 
-	TSharedPtr<FAssetTypeActions_DronePropellerBemt> propeller_bemt_actions = MakeShared<FAssetTypeActions_DronePropellerBemt>();
+	TSharedPtr<FAssetTypeActions_DronePropeller> propeller_bemt_actions = MakeShared<FAssetTypeActions_DronePropeller>();
 	registered_asset_type_actions.Add(propeller_bemt_actions);
 	asset_tools.RegisterAssetTypeActions(propeller_bemt_actions.ToSharedRef());
-
-	TSharedPtr<FAssetTypeActions_DronePropellerSimplified> propeller_simplified_actions = MakeShared<FAssetTypeActions_DronePropellerSimplified>();
-	registered_asset_type_actions.Add(propeller_simplified_actions);
-	asset_tools.RegisterAssetTypeActions(propeller_simplified_actions.ToSharedRef());
 
 	TSharedPtr<FAssetTypeActions_DroneFrame> frame_actions = MakeShared<FAssetTypeActions_DroneFrame>();
 	registered_asset_type_actions.Add(frame_actions);
