@@ -4,7 +4,6 @@
 
 #include "DroneSimulatorCore/RotorModel/Bemt/ComputePropellerThrust.h"
 #include "DroneSimulatorCore/Simulation/Structural.h"
-#include "DroneSimulatorCore/Simulation/LogDebug.h"
 
 struct FDroneBattery;
 struct FDroneMotor;

@@ -4,7 +4,7 @@
 #include "CoreMinimal.h"
 
 #include "DroneSimulatorCore/Simulation/Structural.h"
-#include "DroneSimulatorCore/Simulation/LogDebug.h"
+#include "DroneSimulatorCore/Utils/LogDebug.h"
 
 #include "RotorModelBase.generated.h"
 

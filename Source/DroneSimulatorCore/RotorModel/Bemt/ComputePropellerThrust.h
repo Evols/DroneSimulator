@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "DroneSimulatorCore/Simulation/LogDebug.h"
+#include "DroneSimulatorCore/Utils/LogDebug.h"
 
 struct FDronePropellerBemt;
 

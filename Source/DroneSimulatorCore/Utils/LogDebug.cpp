@@ -1,4 +1,4 @@
-#include "DroneSimulatorCore/Simulation/LogDebug.h"
+#include "DroneSimulatorCore/Utils/LogDebug.h"
 
 DEFINE_LOG_CATEGORY(LogDroneSimulatorDebug);
 

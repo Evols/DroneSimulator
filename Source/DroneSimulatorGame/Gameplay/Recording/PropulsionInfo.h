@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 
-#include "DroneSimulatorCore/Simulation/LogDebug.h"
+#include "DroneSimulatorCore/Utils/LogDebug.h"
 
 #include "PropulsionInfo.generated.h"
 
