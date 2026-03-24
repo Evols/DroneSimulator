@@ -1,4 +1,4 @@
-#include "DroneSimulatorCore/Controller/ControllerInput.h"
+#include "DroneSimulatorCore/FlightMode/DronePlayerInput.h"
 
 
 FDronePlayerInput FDronePlayerInput::zero()

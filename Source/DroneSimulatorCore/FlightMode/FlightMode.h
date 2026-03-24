@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DroneSimulatorCore/Controller/ControllerInput.h"
+#include "DroneSimulatorCore/FlightMode/DronePlayerInput.h"
 #include "DroneSimulatorCore/Controller/Setpoint.h"
 
 #ifdef WITH_DRONE_INPUT
@@ -44,6 +44,9 @@ enum ECameraTiltMode : uint8
 /**
  * Flight mode class, that computes the desired rotation of the drone.
  * The controller (typically a PID) will then actuate the motors via a PID to try to reach this target setpoint.
+ * 
+ * From an architectural perspective, the flight modes turns a player_input (FDronePlayerInput) and computes 
+ * the desired state of the drone, also called "setpoint" (FDroneSetpoint)
  */
 UCLASS(Abstract, EditInlineNew, DefaultToInstanced)
 class UFlightModeBase : public UObject

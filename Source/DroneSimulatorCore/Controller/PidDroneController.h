@@ -4,7 +4,6 @@
 
 #include "PidDroneController.generated.h"
 
-struct FDronePlayerInput;
 
 USTRUCT(BlueprintType)
 struct FPidConfig

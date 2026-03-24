@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 
-#include "ControllerInput.generated.h"
+#include "DronePlayerInput.generated.h"
 
 
 USTRUCT(BlueprintType)
