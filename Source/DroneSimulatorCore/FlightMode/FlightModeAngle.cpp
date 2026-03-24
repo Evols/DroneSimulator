@@ -1,4 +1,4 @@
-#include "DroneSimulatorCore/Controller/FlightModeAngle.h"
+#include "DroneSimulatorCore/FlightMode/FlightModeAngle.h"
 
 ECameraTiltMode UFlightModeAngle::get_camera_tilt_mode() const
 {

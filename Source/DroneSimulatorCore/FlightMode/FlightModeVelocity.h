@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DroneSimulatorCore/Controller/FlightMode.h"
+#include "DroneSimulatorCore/FlightMode/FlightMode.h"
 
 #include "FlightModeVelocity.generated.h"
 

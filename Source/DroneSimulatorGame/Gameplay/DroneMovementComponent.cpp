@@ -5,9 +5,9 @@
 #include "DroneSimulatorCore/Simulation/Inertia.h"
 #include "DroneSimulatorCore/Simulation/LinearDrag.h"
 #include "DroneSimulatorCore/Simulation/RotationalDrag.h"
-#include "DroneSimulatorCore/Controller/FlightModeAir.h"
 #include "DroneSimulatorCore/Simulation/SimulationWorld.h"
 #include "DroneSimulatorCore/Simulation/SubstepBody.h"
+#include "DroneSimulatorCore/FlightMode/FlightModeAir.h"
 #include "DroneSimulatorInput/Public/DroneInputSubsystem.h"
 #include "DroneSimulatorInput/Public/DroneInputTypes.h"
 

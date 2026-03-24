@@ -8,7 +8,7 @@
 #include "DroneSimulatorCore/Controller/Throttle.h"
 #include "DroneSimulatorCore/Controller/ControllerInput.h"
 #include "DroneSimulatorCore/Controller/Setpoint.h"
-#include "DroneSimulatorCore/Controller/FlightMode.h"
+#include "DroneSimulatorCore/FlightMode/FlightMode.h"
 #include "DroneSimulatorCore/Simulation/Structural.h"
 
 #include "DroneMovementComponent.generated.h"

@@ -1,4 +1,4 @@
-#include "DroneSimulatorCore/Controller/FlightMode.h"
+#include "DroneSimulatorCore/FlightMode/FlightMode.h"
 
 
 #ifdef WITH_DRONE_INPUT
