@@ -5,11 +5,11 @@
 #include "Runtime/Engine/Classes/Components/ActorComponent.h"
 
 #include "DroneSimulatorGame/Gameplay/Recording/PropulsionInfo.h"
-#include "DroneSimulatorCore/Public/Controller/Throttle.h"
-#include "DroneSimulatorCore/Public/Controller/ControllerInput.h"
-#include "DroneSimulatorCore/Public/Controller/Setpoint.h"
-#include "DroneSimulatorCore/Public/Controller/FlightMode.h"
-#include "DroneSimulatorCore/Public/Simulation/Structural.h"
+#include "DroneSimulatorCore/Controller/Throttle.h"
+#include "DroneSimulatorCore/Controller/ControllerInput.h"
+#include "DroneSimulatorCore/Controller/Setpoint.h"
+#include "DroneSimulatorCore/Controller/FlightMode.h"
+#include "DroneSimulatorCore/Simulation/Structural.h"
 
 #include "DroneMovementComponent.generated.h"
 

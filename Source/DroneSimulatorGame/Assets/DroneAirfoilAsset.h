@@ -1,7 +1,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "DroneSimulatorCore/Public/Simulation/Structural.h"
+
+#include "DroneSimulatorCore/Simulation/Structural.h"
 
 #include "DroneAirfoilAsset.generated.h"
 

@@ -1,6 +1,5 @@
 #include "DroneSimulatorGame/Gameplay/Recording/PropulsionInfo.h"
-
-#include "DroneSimulatorCore/Public/RotorModel/Bemt/PropellerThrust.h"
+#include "DroneSimulatorCore/RotorModel/Bemt/PropellerThrust.h"
 
 FPropellerPropulsionInfo::FPropellerPropulsionInfo(double in_angular_speed, double in_thrust, double in_torque,
                                                    double in_angle_of_attack, const TArray<double>& in_reynolds, double in_throttle, double in_velocity_axial,

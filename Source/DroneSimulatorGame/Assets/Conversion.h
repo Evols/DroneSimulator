@@ -1,8 +1,9 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "DroneSimulatorCore/Public/Simulation/Structural.h"
 #include "Misc/Optional.h"
+
+#include "DroneSimulatorCore/Simulation/Structural.h"
 
 class UDronePropellerSimplifiedAsset;
 class UDronePropellerBemtAsset;

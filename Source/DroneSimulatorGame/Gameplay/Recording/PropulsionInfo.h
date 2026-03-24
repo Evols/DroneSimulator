@@ -1,7 +1,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "DroneSimulatorCore/Public/Simulation/LogDebug.h"
+
+#include "DroneSimulatorCore/Simulation/LogDebug.h"
 
 #include "PropulsionInfo.generated.h"
 
