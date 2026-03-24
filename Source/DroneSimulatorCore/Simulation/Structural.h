@@ -18,9 +18,9 @@ struct DRONESIMULATORCORE_API FDroneAirfoilTable
 	// For each Reynolds number, we store angle of attack data
 	// Each entry corresponds to one Reynolds number
 	struct FReynoldsEntry {
-	TArray<float> angles_of_attack; // In radians, sorted ascending
-	TArray<float> lift_coefficients;
-	TArray<float> drag_coefficients;
+		TArray<float> angles_of_attack; // In radians, sorted ascending
+		TArray<float> lift_coefficients;
+		TArray<float> drag_coefficients;
 	};
 
 	TArray<FReynoldsEntry> reynolds_entries;
