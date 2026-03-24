@@ -4,7 +4,7 @@
 #include "DroneSimulatorGame/Assets/DroneFrameAsset.h"
 #include "DroneSimulatorGame/Assets/DroneMotorAsset.h"
 #include "DroneSimulatorGame/Assets/DronePropellerAsset.h"
-#include "DroneSimulatorCore/Simulation/Math.h"
+#include "DroneSimulatorCore/Utils/Math.h"
 #include "DroneSimulatorCore/Simulation/Structural.h"
 
 #include "Misc/Optional.h"

@@ -1,6 +1,6 @@
 #if WITH_DEV_AUTOMATION_TESTS
 
-#include "DroneSimulatorCore/Simulation/Math.h"
+#include "DroneSimulatorCore/Utils/Math.h"
 #include "DroneSimulatorCore/RotorModel/Bemt/PropellerThrust.h"
 #include "Runtime/Core/Public/Misc/AutomationTest.h"
 
