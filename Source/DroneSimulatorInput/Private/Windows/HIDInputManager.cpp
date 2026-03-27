@@ -144,8 +144,7 @@ void FHIDInputManager::enumerate_devices(
 					// Ideally we should find a free ID or use a hash.
 					// But for now, let's keep it simple.
 
-					TSharedPtr<FWindowsHIDDevice> new_device =
-							MakeShared<FWindowsHIDDevice>(new_id, device_path);
+					TSharedPtr<FWindowsHIDDevice> new_device = MakeShared<FWindowsHIDDevice>(new_id, device_path);
 					if (new_device->open()) {
 						devices.Add(new_device);
 					}
