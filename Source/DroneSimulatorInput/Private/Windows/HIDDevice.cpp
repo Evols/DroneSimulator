@@ -6,7 +6,9 @@ FWindowsHIDDevice::FWindowsHIDDevice(int32 InInternalId, const FString& InDevice
     : internal_id(InInternalId)
     , device_path(InDevicePath)
     , device_handle(INVALID_HANDLE_VALUE)
+    , overlapped{}
     , preparsed_data(nullptr)
+    , capabilities{}
 {
 }
 
@@ -56,6 +58,11 @@ bool FWindowsHIDDevice::open()
     // Setup Overlapped
     FMemory::Memzero(&overlapped, sizeof(OVERLAPPED));
     overlapped.hEvent = CreateEvent(nullptr, 1, 0, nullptr); // ManualReset=TRUE, InitialState=FALSE
+    if (overlapped.hEvent == nullptr)
+    {
+        close();
+        return false;
+    }
 
     // Start first read
     issue_read();
@@ -65,11 +72,15 @@ bool FWindowsHIDDevice::open()
 
 void FWindowsHIDDevice::close()
 {
-    if (overlapped.hEvent != INVALID_HANDLE_VALUE)
+    if (overlapped.hEvent != nullptr)
     {
-        CancelIo(device_handle);
+        if (device_handle != INVALID_HANDLE_VALUE)
+        {
+            CancelIo(device_handle);
+        }
+
         CloseHandle(overlapped.hEvent);
-        overlapped.hEvent = INVALID_HANDLE_VALUE;
+        overlapped.hEvent = nullptr;
     }
 
     if (preparsed_data)
