@@ -1,4 +1,4 @@
-﻿#include "DroneSimulatorCore/Simulation/InertiaInternal.h"
+﻿#include "DroneSimulatorCore/Inertia/InertiaInternal.h"
 
 double inertia::uu_to_meters(double uu)
 {

@@ -1,5 +1,5 @@
-﻿#include "DroneSimulatorCore/Simulation/Inertia.h"
-#include "DroneSimulatorCore/Simulation/InertiaInternal.h"
+﻿#include "DroneSimulatorCore/Inertia/Inertia.h"
+#include "DroneSimulatorCore/Inertia/InertiaInternal.h"
 #include "DroneSimulatorCore/Utils/Variant.h"
 
 // ------------------------------------------------------------------
