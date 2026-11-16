@@ -40,13 +40,13 @@ public:
 	double min_dynamic_throttle = 0.02;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="PID", meta=(DisplayName="Pitch PID"))
-	FPidConfig pitch_pid = FPidConfig { 0.1, 0.0, 0.0 };
+	FPidConfig pitch_pid = FPidConfig { 0.6, 0.0, 0.001, 0.000025 };
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="PID", meta=(DisplayName="Yaw PID"))
 	FPidConfig yaw_pid = FPidConfig { 0.3, 0.0, 0.0	 };
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="PID", meta=(DisplayName="Roll PID"))
-	FPidConfig roll_pid = FPidConfig { 0.1, 0.0, 0.0 };
+	FPidConfig roll_pid = FPidConfig { 0.6, 0.0, 0.001, 0.000025 };
 
 protected:
 
