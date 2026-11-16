@@ -10,8 +10,13 @@ FPropellerSetThrottle UPidDroneController::tick_controller(float delta_time, con
 	constexpr auto angular_velocity_clamp = angular_velocity_clamp_deg * (PI / 180.0);
 	const auto angular_velocity_error = (setpoint.angular_velocity_radians - current_angular_velocity).BoundToCube(angular_velocity_clamp);
 
-	const auto derivative_angular_velocity_error = (angular_velocity_error - last_angular_velocity_error) / delta_time;
-	last_angular_velocity_error = FMath::VInterpTo(last_angular_velocity_error, angular_velocity_error, delta_time, 500.f);
+	// Differentiate the measurement, not the setpoint error, to avoid D kicks from stick changes.
+	// Seed the history on the first tick so starting with a nonzero rate does not create a spike.
+	const auto derivative_angular_velocity = has_last_angular_velocity && delta_time > 0.001f
+		? (last_angular_velocity - current_angular_velocity) / delta_time
+		: FVector::ZeroVector;
+	last_angular_velocity = current_angular_velocity;
+	has_last_angular_velocity = true;
 
 	integrated_angular_velocity_error += angular_velocity_error * delta_time;
 
@@ -19,7 +24,7 @@ FPropellerSetThrottle UPidDroneController::tick_controller(float delta_time, con
 	const FVector derivative_pid = FVector(this->roll_pid.derivative, this->pitch_pid.derivative, this->yaw_pid.derivative);
 	const FVector integral_pid = FVector(this->roll_pid.integral, this->pitch_pid.integral, this->yaw_pid.integral);
 
-	const auto delta_throttle_angular = -(angular_velocity_error * proportional_pid + derivative_angular_velocity_error * derivative_pid + integrated_angular_velocity_error * integral_pid);
+	const auto delta_throttle_angular = -(angular_velocity_error * proportional_pid + derivative_angular_velocity * derivative_pid + integrated_angular_velocity_error * integral_pid);
 
 	const auto delta_throttle_pitch = delta_throttle_angular.Y;
 	const auto delta_throttle_yaw = delta_throttle_angular.Z;

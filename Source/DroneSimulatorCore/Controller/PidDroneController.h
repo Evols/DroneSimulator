@@ -47,7 +47,10 @@ public:
 protected:
 
 	UPROPERTY()
-	FVector last_angular_velocity_error;
+	FVector last_angular_velocity = FVector::ZeroVector;
+
+	UPROPERTY()
+	bool has_last_angular_velocity = false;
 
 	UPROPERTY()
 	FVector integrated_angular_velocity_error;
