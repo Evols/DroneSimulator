@@ -36,12 +36,16 @@ void UDroneInputSubsystem::Initialize(FSubsystemCollectionBase &Collection) {
 		FSlateApplication::Get().RegisterInputPreProcessor(this->input_processor);
 	}
 
+#if PLATFORM_WINDOWS || PLATFORM_MAC
 	FHIDInputManager::get().initialize();
+#endif
 	UE_LOG(LogDroneSimulatorInput, Log, TEXT("UDroneInputManager::Initialize - Input System Initialized"));
 }
 
 void UDroneInputSubsystem::Deinitialize() {
+#if PLATFORM_WINDOWS || PLATFORM_MAC
 	FHIDInputManager::get().shutdown();
+#endif
 
 	if (FSlateApplication::IsInitialized() && this->input_processor.IsValid()) {
 		FSlateApplication::Get().UnregisterInputPreProcessor(this->input_processor);
@@ -67,7 +71,9 @@ void UDroneInputSubsystem::Tick(float DeltaTime) {
 		return;
 	}
 
+#if PLATFORM_WINDOWS || PLATFORM_MAC
 	FHIDInputManager::get().poll_devices(this);
+#endif
 }
 
 static float apply_unsigned_axis_invert(float calibrated_value,
