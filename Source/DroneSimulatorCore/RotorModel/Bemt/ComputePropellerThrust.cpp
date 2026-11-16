@@ -249,10 +249,10 @@ double compute_induced_velocity_from_thrust(double thrust, double v_axial, doubl
 	}
 
 	const auto discriminant_root = FMath::Sqrt(discriminant);
-	const auto root_1 = 0.5 * (-v_axial + discriminant_root);
-	const auto root_2 = 0.5 * (-v_axial - discriminant_root);
-
-	return v_axial >= 0.0 ? root_2 : root_1;
+	// Stay on the propeller branch through hover: positive thrust induces
+	// downstream flow regardless of the sign of the freestream velocity.
+	// Switching roots at zero axial velocity reverses induction and jumps the loads.
+	return 0.5 * (-v_axial + discriminant_root);
 }
 
 TTuple<FPropThrustResult, FDebugLog> simulation_bemt::compute_thrust_and_torque(double propeller_angular_speed, const FVector& thrust_axis,
