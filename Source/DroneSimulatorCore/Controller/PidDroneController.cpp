@@ -18,13 +18,25 @@ FPropellerSetThrottle UPidDroneController::tick_controller(float delta_time, con
 	last_angular_velocity = current_angular_velocity;
 	has_last_angular_velocity = true;
 
+	// Feedforward anticipates commanded acceleration without waiting for a measured rate error.
+	// Seed the setpoint history to avoid a spike when the controller first starts.
+	const auto setpoint_angular_acceleration = has_last_setpoint_angular_velocity && delta_time > 0.001f
+		? (setpoint.angular_velocity_radians - last_setpoint_angular_velocity) / delta_time
+		: FVector::ZeroVector;
+	last_setpoint_angular_velocity = setpoint.angular_velocity_radians;
+	has_last_setpoint_angular_velocity = true;
+
 	integrated_angular_velocity_error += angular_velocity_error * delta_time;
 
 	const FVector proportional_pid = FVector(this->roll_pid.proportional, this->pitch_pid.proportional, this->yaw_pid.proportional);
 	const FVector derivative_pid = FVector(this->roll_pid.derivative, this->pitch_pid.derivative, this->yaw_pid.derivative);
 	const FVector integral_pid = FVector(this->roll_pid.integral, this->pitch_pid.integral, this->yaw_pid.integral);
+	const FVector feedforward_pid = FVector(this->roll_pid.feedforward, this->pitch_pid.feedforward, this->yaw_pid.feedforward);
 
-	const auto delta_throttle_angular = -(angular_velocity_error * proportional_pid + derivative_angular_velocity * derivative_pid + integrated_angular_velocity_error * integral_pid);
+	const auto delta_throttle_angular = -(angular_velocity_error * proportional_pid
+		+ derivative_angular_velocity * derivative_pid
+		+ integrated_angular_velocity_error * integral_pid
+		+ setpoint_angular_acceleration * feedforward_pid);
 
 	const auto delta_throttle_pitch = delta_throttle_angular.Y;
 	const auto delta_throttle_yaw = delta_throttle_angular.Z;

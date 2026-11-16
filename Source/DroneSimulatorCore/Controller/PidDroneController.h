@@ -20,6 +20,10 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	double derivative = 0.0;
+
+	/** Gain applied to commanded angular acceleration (rad/s^2), independent of measured rotation. */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	double feedforward = 0.0;
 };
 
 UCLASS()
@@ -51,6 +55,12 @@ protected:
 
 	UPROPERTY()
 	bool has_last_angular_velocity = false;
+
+	UPROPERTY()
+	FVector last_setpoint_angular_velocity = FVector::ZeroVector;
+
+	UPROPERTY()
+	bool has_last_setpoint_angular_velocity = false;
 
 	UPROPERTY()
 	FVector integrated_angular_velocity_error;
