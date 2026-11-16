@@ -12,7 +12,7 @@ FPropellerSetThrottle UPidDroneController::tick_controller(float delta_time, con
 
 	// Differentiate the measurement, not the setpoint error, to avoid D kicks from stick changes.
 	// Seed the history on the first tick so starting with a nonzero rate does not create a spike.
-	const auto derivative_angular_velocity = has_last_angular_velocity && delta_time > 0.001f
+	const auto derivative_angular_velocity = has_last_angular_velocity && delta_time > 0.0f
 		? (last_angular_velocity - current_angular_velocity) / delta_time
 		: FVector::ZeroVector;
 	last_angular_velocity = current_angular_velocity;
@@ -20,7 +20,7 @@ FPropellerSetThrottle UPidDroneController::tick_controller(float delta_time, con
 
 	// Feedforward anticipates commanded acceleration without waiting for a measured rate error.
 	// Seed the setpoint history to avoid a spike when the controller first starts.
-	const auto setpoint_angular_acceleration = has_last_setpoint_angular_velocity && delta_time > 0.001f
+	const auto setpoint_angular_acceleration = has_last_setpoint_angular_velocity && delta_time > 0.0f
 		? (setpoint.angular_velocity_radians - last_setpoint_angular_velocity) / delta_time
 		: FVector::ZeroVector;
 	last_setpoint_angular_velocity = setpoint.angular_velocity_radians;
