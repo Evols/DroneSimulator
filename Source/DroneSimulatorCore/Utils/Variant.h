@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "Misc/TVariant.h"
+
 template <class> inline constexpr bool AlwaysFalseV = false;
 
 template <class... Fs>
@@ -8,7 +10,7 @@ template <class... Fs>
 TVariantMatch(Fs...) -> TVariantMatch<Fs...>;
 
 template <typename T>
-concept UEVariant = TIsVariant<std::decay_t<T>>::Value;
+concept UEVariant = TIsVariant_V<std::decay_t<T>>;
 
 
 /**
