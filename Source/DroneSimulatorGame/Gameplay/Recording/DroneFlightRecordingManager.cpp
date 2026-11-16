@@ -100,7 +100,7 @@ void ADroneFlightRecordingManager::record_flight_record_of_pawns()
 
 		TArray<FFlightRecordEvent> savable_flight_record;
 		savable_flight_record.Reserve(pawn_flight_record.Num());
-		for (const auto event : pawn_flight_record)
+		for (const auto& event : pawn_flight_record)
 		{
 			savable_flight_record.Push(FFlightRecordEvent(actor_iterator->GetFName(), event.event_time, event.event_tata));
 		}
